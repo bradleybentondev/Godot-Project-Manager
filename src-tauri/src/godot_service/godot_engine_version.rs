@@ -1,6 +1,6 @@
 
 pub struct GodotEngineVersion {
-    version_name: String,
-    version_number: String,
-    path: String
+    pub version_name: String,
+    pub version_number: String,
+    pub path: String
 }

@@ -1,1 +1,2 @@
-pub mod fetcher;
+pub mod os_type;
+mod download_service;
