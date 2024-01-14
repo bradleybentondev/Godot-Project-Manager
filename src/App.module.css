@@ -6,6 +6,7 @@
   filter: drop-shadow(0 0 2em #61dafb);
 }
 
-body {
-  height: 100vh;
+.mainContainer {
+  display: flex;
+  height: 100%;
 }

@@ -1,0 +1,48 @@
+.container {
+    margin: 5px;
+    min-width: 250px;
+    max-width: 250px;
+    box-shadow: 0px 0px 5px rgb(143, 143, 143);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.container h3 {
+    margin-left: 20px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    margin-left: 20px;
+    margin-right: 10px;
+    margin-top: 40px;
+}
+
+.nav div {
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.countBox {
+    background-color: rgb(214, 222, 230);
+    padding: 1px;
+    border-radius: 5px;
+    font-size: smaller;
+    width: 25px;
+    align-self: center;
+    display: flex;
+    justify-content: center;
+}
+
+.mostRecents {
+    margin-top: 20px;
+    margin-left: 20px;
+}
+
+.mostRecents div {
+    margin-top: 20px;
+}
