@@ -1,27 +1,27 @@
 use std::{
+    fs,
     io::{Cursor, Read},
     path::{Path, PathBuf},
 };
 
 use reqwest::header::USER_AGENT;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{environmnet::is_prod, test_data};
 
 const GITHUB_URL: &str = "https://api.github.com/repos/godotengine/godot/releases";
-
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Asset {
     pub browser_download_url: String,
     pub name: String,
     pub created_at: String,
-    pub size: i64
+    pub size: i64,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Release {
-    assets: Vec<Asset>
+    assets: Vec<Asset>,
 }
 
 /// Gets all releases from https://api.github.com/repos/godotengine/godot/releases
@@ -54,10 +54,16 @@ pub async fn download_releases() -> Result<Vec<Release>, Box<dyn std::error::Err
 
 pub async fn download_and_extract_engine(
     url: String,
-    folder_path: &Path,
+    godot_engine_path: &Path,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let archive: Vec<u8> = download_url(&url, &folder_path).await.unwrap();
-    let target_dir = PathBuf::from(folder_path); // Doesn't need to exist
+    let engine_name = url.split("/").last().unwrap();
+    let version_path = create_engine_version_path(&godot_engine_path, &engine_name);
+    let file_path = create_file_path_from_url_at_path(&version_path, &engine_name);
+
+    fs::File::create(&file_path).unwrap();
+
+    let archive: Vec<u8> = download_url(&url, &file_path).await.unwrap();
+    let target_dir = PathBuf::from(version_path); // Doesn't need to exist
 
     // The third parameter allows you to strip away toplevel directories.
     // If `archive` contained a single folder, that folder's contents would be extracted instead.
@@ -65,15 +71,24 @@ pub async fn download_and_extract_engine(
     Ok(())
 }
 
-async fn download_url(
-    url: &str,
-    folder_path: &Path,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+fn create_engine_version_path(godot_engine_path: &Path, engine_name: &str) -> PathBuf {
+    let mut path = PathBuf::from(godot_engine_path);
+    let name = &engine_name.replace(".exe", "");
+    let name2 = &name.replace(".zip", "");
+    let name3 = &name2.replace(" ", "_");
+    path.push(name3);
+    fs::create_dir_all(&path);
+    path
+}
+
+fn create_file_path_from_url_at_path(folder_path: &Path, url: &str) -> PathBuf {
     let mut file_path = PathBuf::from(folder_path);
-    let file_name = url.clone().split("/").last().unwrap();
-
+    let file_name = url.split("/").last().unwrap();
     file_path.push(file_name);
+    file_path
+}
 
+async fn download_url(url: &str, file_path: &Path) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let response = reqwest::get(url).await?;
     let mut file = std::fs::File::create(file_path)?;
     let mut content = Cursor::new(response.bytes().await?);
@@ -85,14 +100,18 @@ async fn download_url(
 }
 
 /// Filters assets by name
-pub fn filter_assets_by_name(releases: &Vec<Release>, filter: String) -> Vec<Asset> {
-    let assets: Vec<&Asset> = releases.into_iter().map(|release|{
-        &release.assets
-    }).flatten().collect();
+pub fn filter_assets_by_name(releases: &Vec<Release>, filter: &str) -> Vec<Asset> {
+    let assets: Vec<&Asset> = releases
+        .into_iter()
+        .map(|release| &release.assets)
+        .flatten()
+        .collect();
 
-    let filtered: Vec<Asset> = assets.into_iter().filter(|asset|{
-        asset.name.contains(&filter)
-    }).map(|asset| asset.clone()).collect();
+    let filtered: Vec<Asset> = assets
+        .into_iter()
+        .filter(|asset| asset.name.contains(&filter))
+        .map(|asset| asset.clone())
+        .collect();
 
     return filtered;
 }
@@ -103,7 +122,7 @@ mod tests {
 
     use crate::{
         directory::config_directory_service::{Directories, TestDirectoryService},
-        fetcher::download_service::{download_and_extract_engine, self},
+        fetcher::download_service::{self, download_and_extract_engine},
         fetcher::os_type::OsType,
     };
 
@@ -112,15 +131,11 @@ mod tests {
         let directory_service = TestDirectoryService::new();
 
         let url = "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip".to_string();
-        let file_path = directory_service.engine_version_path("v4.2.1-stable_win64");
-        println!("File path is {}", &file_path.display());
-        if !file_path.exists() {
-            fs::create_dir_all(&file_path).unwrap();
-            println!("Creating path is {}", &file_path.display());
-        }
-        download_and_extract_engine(url, &file_path).await.unwrap();
+        download_and_extract_engine(url, directory_service.engine_storage_path())
+            .await
+            .unwrap();
 
-        let paths = fs::read_dir(file_path).unwrap();
+        let paths = fs::read_dir(directory_service.engine_storage_path()).unwrap();
         assert!(paths.into_iter().next().is_some());
 
         fs::remove_dir_all("./test_data").unwrap();
@@ -147,7 +162,7 @@ mod tests {
         ];
 
         for filter in filters {
-            let filtered = download_service::filter_assets_by_name(&releases, filter.to_string());
+            let filtered = download_service::filter_assets_by_name(&releases, &filter);
 
             println!("testing '{}'", &filter);
             assert!(filtered.len() >= 1);

@@ -3,10 +3,10 @@ export class ProjectData {
     projectName: string;
     path: string;
     lastOpened: number;
-    engineVersion: String;
+    engineVersion: string;
     favorite: boolean;
 
-    constructor(projectName: string, path: string, lastOpened: string, engineVersion: String, favorite: boolean){
+    constructor(projectName: string, path: string, lastOpened: string, engineVersion: string, favorite: boolean) {
         this.projectName = projectName;
         this.path = path;
         this.lastOpened = Date.parse(lastOpened);
