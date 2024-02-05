@@ -1,56 +1,74 @@
 import { useEffect, useState } from "react";
 import { GodotEngineVersion } from "../data/GodotEngineVersion";
-import { ProjectData } from "../data/ProjectData";
 import styles from "./EnginePage.module.css";
 
 interface EnginePageProps {
     allGodotEngines: GodotEngineVersion[];
     installedGodotEngines: GodotEngineVersion[];
-    projects: ProjectData[];
+    downloadEngineFunc: (engineName: string) => void;
+    deleteVersion: (engineName: string) => void
 }
 
 function EnginePage(props: EnginePageProps) {
-    const [engines, setEngines] = useState<GodotEngineVersion[]>([]);
+    const [availableEngines, setAvailableEngines] = useState<GodotEngineVersion[]>([]);
 
     useEffect(() => {
-        setEngines(props.allGodotEngines);
+        let availableEngines = props.allGodotEngines.filter(engine => props.installedGodotEngines.find(installedEngine => {
+            return engine.engineName === installedEngine.engineName
+        }) === undefined);
+
+        setAvailableEngines(availableEngines);
+        console.log("availableEngines", availableEngines);
+        console.log("installed", props.installedGodotEngines);
+
     }, [props.allGodotEngines, props.installedGodotEngines]);
 
-    function engineVersionDropdown(selectedValue: GodotEngineVersion | null): JSX.Element {
-
-        return (
-            <select name="engines" id="engines">
-                {engines.map(engine =>
-                    <option selected={selectedValue?.engineName === engine.engineName} value={engine.engineName}>{engine.engineName}</option>
-                )}
-            </select>
-        )
-    }
-
-    function findEngineVersion(engineName: string): GodotEngineVersion | null {
-        return engines.find(engine => engine.engineName == engineName) ?? null;
-    }
-
     return (
-        <div className={styles.widthFull}>
-            <div className={styles.width95 + " " + styles.tableContainer}>
-                <table cellSpacing={"0"} className={styles.widthFull}>
-                    <tr>
-                        <th>Last Opened</th>
-                        <th>Name</th>
-                        <th>Engine Version</th>
-                        <th>Button</th>
-                    </tr>
-                    {props.projects.map(project => (
-                        <tr>
-                            <td>{(new Date(project.lastOpened).toDateString())}</td>
-                            <td>{project.projectName}</td>
-                            <td>{engineVersionDropdown(findEngineVersion(project.engineVersion))}</td>
-                            <td>Button</td>
-                        </tr>
-                    ))}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+            {props.installedGodotEngines.length > 0 ?
+                <div className={styles.widthFull}>
+                    <div className={styles.width95 + " " + styles.tableContainer}>
+                        <table cellSpacing={"0"} className={styles.widthFull}>
+                            <tr>
+                                <th>Name</th>
+                                <th>Version</th>
+                                <th>Date Uploaded</th>
+                                <th>DButton</th>
+                            </tr>
+                            {props.installedGodotEngines.map(engine => (
+                                <tr>
+                                    <td>{engine.engineName}</td>
+                                    <td>{engine.engineVersion}</td>
+                                    <td>{new Date(engine.updatedAt).toDateString()}</td>
+                                    <td><button onClick={() => props.deleteVersion(engine.engineName)}>Delete</button></td>
+                                </tr>
+                            ))}
 
-                </table>
+                        </table>
+                    </div>
+                </div>
+                : null}
+
+            <div className={styles.widthFull}>
+                <div className={styles.width95 + " " + styles.tableContainer}>
+                    <table cellSpacing={"0"} className={styles.widthFull}>
+                        <tr>
+                            <th>Name</th>
+                            <th>Version</th>
+                            <th>Date Uploaded</th>
+                            <th>DButton</th>
+                        </tr>
+                        {availableEngines.map(engine => (
+                            <tr>
+                                <td>{engine.engineName}</td>
+                                <td>{engine.engineVersion}</td>
+                                <td>{new Date(engine.updatedAt).toDateString()}</td>
+                                <td><button onClick={() => props.downloadEngineFunc(engine.engineName)}>Download</button></td>
+                            </tr>
+                        ))}
+
+                    </table>
+                </div>
             </div>
         </div>
     );

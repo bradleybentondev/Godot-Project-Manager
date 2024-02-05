@@ -12,8 +12,6 @@ interface SideBarProps {
 
 function SideBar(props: SideBarProps) {
 
-
-
   return (
     <div className={styles.container}>
       <div>
@@ -22,15 +20,15 @@ function SideBar(props: SideBarProps) {
 
       <nav className={styles.nav}>
         <div>
-          <a href="">Projects</a>
+          <button onClick={() => props.setPage(PageEnum.Projects)}>Projects</button>
           <span className={styles.countBox}>{props.projectCount}</span>
         </div>
         <div>
-          <a href="">Versions</a>
+          <button onClick={() => props.setPage(PageEnum.Engines)}>Versions</button>
           <span className={styles.countBox}>{props.engineCount}</span>
         </div>
         <div>
-          <a href="">News</a>
+          <button onClick={() => props.setPage(PageEnum.News)}>News</button>
           <span className={styles.countBox}>{props.newsCount}</span>
         </div>
       </nav>

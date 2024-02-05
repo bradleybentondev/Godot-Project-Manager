@@ -2,12 +2,18 @@ use std::{
     fs,
     io::{Cursor, Read},
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 use reqwest::header::USER_AGENT;
 use serde::{Deserialize, Serialize};
 
-use crate::{environmnet::is_prod, test_data};
+use crate::{
+    directory::config_directory_service::ConfigDirectoryService,
+    environmnet::is_prod,
+    godot_service::{godot_engine_service, godot_engine_version::GodotEngineVersion},
+    test_data, Data, DataState,
+};
 
 const GITHUB_URL: &str = "https://api.github.com/repos/godotengine/godot/releases";
 
@@ -33,7 +39,7 @@ pub struct Release {
 /// # Errors
 ///
 /// This function will return an error if there was an error sending a request to the url.
-pub async fn download_releases() -> Result<Vec<Release>, Box<dyn std::error::Error>> {
+pub async fn get_available_releases() -> Result<Vec<Release>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let body: String = if is_prod() {
         client
@@ -53,22 +59,31 @@ pub async fn download_releases() -> Result<Vec<Release>, Box<dyn std::error::Err
 }
 
 pub async fn download_and_extract_engine(
-    url: String,
-    godot_engine_path: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let engine_name = url.split("/").last().unwrap();
+    directory_service: &ConfigDirectoryService,
+    godot_engine_version: &GodotEngineVersion,
+) -> Result<GodotEngineVersion, Box<dyn std::error::Error>> {
+    let godot_engine_path = directory_service.engine_storage_path();
+    let engine_name = godot_engine_version.download_url.split("/").last().unwrap();
     let version_path = create_engine_version_path(&godot_engine_path, &engine_name);
     let file_path = create_file_path_from_url_at_path(&version_path, &engine_name);
 
     fs::File::create(&file_path).unwrap();
 
-    let archive: Vec<u8> = download_url(&url, &file_path).await.unwrap();
-    let target_dir = PathBuf::from(version_path); // Doesn't need to exist
+    let archive: Vec<u8> = download_url(&godot_engine_version.download_url, &file_path)
+        .await
+        .unwrap();
+    let target_dir = PathBuf::from(&version_path); // Doesn't need to exist
 
     // The third parameter allows you to strip away toplevel directories.
     // If `archive` contained a single folder, that folder's contents would be extracted instead.
     zip_extract::extract(Cursor::new(archive), &target_dir, true)?;
-    Ok(())
+
+    Ok(GodotEngineVersion::new(
+        godot_engine_version.version_name.clone(),
+        godot_engine_version.updated_at.clone(),
+        version_path.to_str().unwrap().to_string(),
+        godot_engine_version.download_url.clone(),
+    ))
 }
 
 fn create_engine_version_path(godot_engine_path: &Path, engine_name: &str) -> PathBuf {
@@ -77,7 +92,7 @@ fn create_engine_version_path(godot_engine_path: &Path, engine_name: &str) -> Pa
     let name2 = &name.replace(".zip", "");
     let name3 = &name2.replace(" ", "_");
     path.push(name3);
-    fs::create_dir_all(&path);
+    fs::create_dir_all(&path).unwrap();
     path
 }
 
@@ -118,39 +133,51 @@ pub fn filter_assets_by_name(releases: &Vec<Release>, filter: &str) -> Vec<Asset
 
 #[cfg(test)]
 mod tests {
-    use std::fs;
+    use std::{fs, sync::Arc};
 
     use crate::{
-        directory::config_directory_service::{Directories, TestDirectoryService},
-        fetcher::download_service::{self, download_and_extract_engine},
-        fetcher::os_type::OsType,
+        directory::config_directory_service::ConfigDirectoryService,
+        fetcher::{
+            download_service::{self, download_and_extract_engine, get_available_releases},
+            os_type::OsType,
+        },
+        godot_service::godot_engine_version::GodotEngineVersion,
     };
 
     #[tokio::test]
     async fn test_download_engine_version() {
-        let directory_service = TestDirectoryService::new();
+        let directory_service = ConfigDirectoryService::new_test(
+            ".\\test-data-6".to_string(),
+            "test1.json".to_string(),
+        );
 
-        let url = "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip".to_string();
-        download_and_extract_engine(url, directory_service.engine_storage_path())
+        let engine = GodotEngineVersion::new("Godot_v4.2.1-stable_win64.exe.zip".to_string(), "2024-01-20".to_string(), "".to_string(), 
+        "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip".to_string());
+
+        let updated_engine = download_and_extract_engine(&directory_service, &engine)
             .await
             .unwrap();
+
+        assert!(updated_engine.version_name == "Godot_v4.2.1-stable_win64");
+        assert!(updated_engine.version_number == "4.2.1");
+        assert!(!updated_engine.path.is_empty());
 
         let paths = fs::read_dir(directory_service.engine_storage_path()).unwrap();
         assert!(paths.into_iter().next().is_some());
 
-        fs::remove_dir_all("./test_data").unwrap();
+        fs::remove_dir_all(".\\test-data-6").unwrap();
     }
 
     #[tokio::test]
     async fn test_releases() {
-        let releases = download_service::download_releases().await.unwrap();
+        let releases = get_available_releases().await.unwrap();
 
         assert!(releases.len() >= 1)
     }
 
     #[tokio::test]
     async fn test_filter_assets() {
-        let releases = download_service::download_releases().await.unwrap();
+        let releases = get_available_releases().await.unwrap();
         let filters = vec![
             OsType::Windows64.value(),
             OsType::Windows32.value(),
