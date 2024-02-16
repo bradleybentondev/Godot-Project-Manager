@@ -1,3 +1,4 @@
+pub mod command;
 pub mod godot_service;
 pub mod service;
 pub mod fetcher;

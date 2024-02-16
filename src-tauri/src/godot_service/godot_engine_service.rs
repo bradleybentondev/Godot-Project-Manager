@@ -108,7 +108,7 @@ mod tests {
     #[tokio::test]
     async fn test_find_godot_version() {
         let directory_service = ConfigDirectoryService::new_test(
-            ".\\test-data-4".to_string(),
+            ".\\test-data-7".to_string(),
             "test1.json".to_string(),
         );
 
@@ -128,6 +128,6 @@ mod tests {
 
         assert!(versions.len() == 1);
 
-        fs::remove_dir_all(".\\test-data-4").unwrap();
+        fs::remove_dir_all(".\\test-data-7").unwrap();
     }
 }

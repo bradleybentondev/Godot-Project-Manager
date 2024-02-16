@@ -7,11 +7,17 @@ use crate::godot_service::godot_engine_version::GodotEngineVersion;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ProjectData {
+    #[serde(rename(serialize = "projectName", deserialize = "projectName"))]
     pub project_name: String,
+    #[serde(rename(serialize = "projectPath", deserialize = "projectPath"))]
     pub project_path: String,
+    #[serde(rename(serialize = "projectVersion", deserialize = "projectVersion"))]
     pub project_version: String,
+    #[serde(rename(serialize = "lastDateOpened", deserialize = "lastDateOpened"))]
     pub last_date_opened: String,
+    #[serde(rename(serialize = "pathValid", deserialize = "pathValid"))]
     pub path_valid: bool,
+    #[serde(rename(serialize = "engineValid", deserialize = "engineValid"))]
     pub engine_valid: bool,
 }
 

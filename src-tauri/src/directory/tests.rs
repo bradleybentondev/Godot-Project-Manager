@@ -94,7 +94,7 @@ mod tests {
         };
 
         let directory = ConfigDirectoryService::new_test(
-            ".\\test-data-4".to_string(),
+            ".\\test-data-10".to_string(),
             "test2.json".to_string(),
         );
 
@@ -106,7 +106,7 @@ mod tests {
         assert!(config.tracked_godot_versions.len() == 1);
         assert!(config.tracked_projects.len() == 0);
 
-        fs::remove_dir_all(".\\test-data-4").unwrap();
+        fs::remove_dir_all(".\\test-data-10").unwrap();
     }
 
     #[tokio::test]

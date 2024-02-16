@@ -47,3 +47,15 @@
 .mostRecents div {
     margin-top: 20px;
 }
+
+.noButton {
+    all: unset;
+    display: flex;
+    cursor: pointer;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

@@ -8,11 +8,14 @@ import { GodotEngineResponse } from "./data/GodotEngineResponse";
 import { ProjectData } from "./data/ProjectData";
 import ProjectPage from "./components/ProjectPage";
 import EnginePage from "./components/EnginePage";
+import SettingsPage from "./components/SettingsPage";
 
 function App() {
   const [page, setPage] = useState(PageEnum.Projects);
   const [allEngines, setAllEngines] = useState<GodotEngineVersion[]>([]);
   const [installedEngines, setInstalledEngines] = useState<GodotEngineVersion[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [projectPaths, setProjectPaths] = useState<string[]>([]);
 
   async function init() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -32,6 +35,13 @@ function App() {
     invoke<GodotEngineVersion[]>("get_installed_versions").then(response => {
       setInstalledEngines(response);
     })
+
+    getAllProjects();
+
+    invoke<string[]>("get_project_paths").then(response => {
+      console.log("get_project_paths", response)
+      setProjectPaths(response);
+    })
   }
 
   function testData(): ProjectData[] {
@@ -41,6 +51,13 @@ function App() {
       new ProjectData("Some project 3", "test3", "2023-07-19", "4.2.2", false),
       new ProjectData("Some project 4", "test4", "2023-06-19", "3.3.2 Mono", false),
     ].sort((a, b) => b.lastOpened - a.lastOpened);
+  }
+
+  function getAllProjects() {
+    invoke<ProjectData[]>("get_all_projects").then(response => {
+      setProjects(response);
+      console.log(response);
+    })
   }
 
   function deleteVersion(engineName: string) {
@@ -65,15 +82,15 @@ function App() {
 
   return (
     <div className={styles.mainContainer}>
-      <SideBar setPage={setPage} projectCount={testData().length} engineCount={allEngines.length} newsCount={12} projects={testData()} />
+      <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
 
       {page == PageEnum.Projects ? (
-        <ProjectPage installedGodotEngines={installedEngines} projects={testData()} />
+        <ProjectPage installedGodotEngines={installedEngines} projects={projects} />
       ) : page == PageEnum.Engines ? (
         <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
-      ) : (
-        <div></div>
-      )}
+      ) : page == PageEnum.Settings ? (
+        <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
+      ) : null}
     </div>
   );
 }

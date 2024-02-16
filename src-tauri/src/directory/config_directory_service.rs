@@ -18,13 +18,17 @@ pub struct ConfigDirectoryService {
 }
 
 impl ConfigDirectoryService {
-    pub fn new(config_file_name: String) -> ConfigDirectoryService {
-        let storage_path = BaseDirs::new().unwrap().config_dir().to_path_buf();
+    pub fn new() -> ConfigDirectoryService {
+        let mut storage_path = BaseDirs::new().unwrap().config_dir().to_path_buf();
+        storage_path.push("godot_project_manager");
         ConfigDirectoryService {
-            config_file_name: config_file_name.to_string(),
+            config_file_name: "config.json".to_string(),
             storage_path: storage_path.clone(),
             engine_storage_path: Self::get_engine_dir_path(storage_path.clone()),
-            config_file_path: Self::get_config_file_path(storage_path.clone(), config_file_name),
+            config_file_path: Self::get_config_file_path(
+                storage_path.clone(),
+                "config.json".to_string(),
+            ),
         }
     }
 
@@ -54,7 +58,7 @@ impl ConfigDirectoryService {
     /// # Panics
     ///
     /// Panics if no valid home directory can be found
-    pub fn get_config_file_path(storage_path: PathBuf, config_file_name: String) -> PathBuf {
+    fn get_config_file_path(storage_path: PathBuf, config_file_name: String) -> PathBuf {
         let mut path = storage_path;
         path.push(config_file_name);
         path
@@ -79,10 +83,14 @@ impl ConfigDirectoryService {
     }
 
     fn create_config_path_if_not_exsits(&self, storage_path: &Path) {
-        if !storage_path.exists() {
-            let mut path = PathBuf::from(storage_path);
+        let mut path = PathBuf::from(storage_path);
+        if !path.exists() {
             fs::create_dir_all(&path).unwrap();
-            path.push(&self.config_file_name);
+        }
+
+        path.push(&self.config_file_name);
+
+        if !path.exists() {
             fs::File::create(&path).unwrap();
 
             let config = ProjectConfig {

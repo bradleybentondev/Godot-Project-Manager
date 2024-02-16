@@ -31,6 +31,9 @@ function SideBar(props: SideBarProps) {
           <button onClick={() => props.setPage(PageEnum.News)}>News</button>
           <span className={styles.countBox}>{props.newsCount}</span>
         </div>
+        <div>
+          <button onClick={() => props.setPage(PageEnum.Settings)}>Settings</button>
+        </div>
       </nav>
 
       <div className={styles.mostRecents}>

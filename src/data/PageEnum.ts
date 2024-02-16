@@ -1,5 +1,6 @@
 export enum PageEnum {
-    Projects,
-    Engines,
-    News,
-  }
+  Projects,
+  Engines,
+  News,
+  Settings,
+}
