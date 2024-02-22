@@ -1,6 +1,8 @@
 mod tests {
     use std::fs;
 
+    use chrono::Local;
+
     use crate::{
         directory::config_directory_service::{
             get_project_config, save_project_config, ConfigDirectoryService,
@@ -53,14 +55,13 @@ mod tests {
         let config = ProjectConfig {
             tracked_directories: vec![],
             tracked_godot_versions: vec![],
-            tracked_projects: vec![ProjectData {
-                project_name: "test".to_string(),
-                project_path: "test".to_string(),
-                project_version: "test".to_string(),
-                last_date_opened: "test".to_string(),
-                path_valid: false,
-                engine_valid: false,
-            }],
+            tracked_projects: vec![ProjectData::new(
+                "test".to_string(),
+                "test".to_string(),
+                Local::now().timestamp(),
+                false,
+                false,
+            )],
         };
 
         let directory = ConfigDirectoryService::new_test(
@@ -83,13 +84,12 @@ mod tests {
     async fn test_writing_tracked_engines_to_config() {
         let config = ProjectConfig {
             tracked_directories: vec![],
-            tracked_godot_versions: vec![GodotEngineVersion {
-                version_name: "test".to_string(),
-                version_number: "test".to_string(),
-                updated_at: "test".to_string(),
-                path: "test".to_string(),
-                download_url: "test".to_string(),
-            }],
+            tracked_godot_versions: vec![GodotEngineVersion::new(
+                "test".to_string(),
+                "test".to_string(),
+                "test".to_string(),
+                "test".to_string(),
+            )],
             tracked_projects: vec![],
         };
 
@@ -113,21 +113,19 @@ mod tests {
     async fn test_writing_all_to_config() {
         let config = ProjectConfig {
             tracked_directories: vec!["test".to_string(), "test2".to_string()],
-            tracked_godot_versions: vec![GodotEngineVersion {
-                version_name: "test".to_string(),
-                version_number: "test".to_string(),
-                updated_at: "test".to_string(),
-                path: "test".to_string(),
-                download_url: "test".to_string(),
-            }],
-            tracked_projects: vec![ProjectData {
-                project_name: "test".to_string(),
-                project_path: "test".to_string(),
-                project_version: "test".to_string(),
-                last_date_opened: "test".to_string(),
-                path_valid: false,
-                engine_valid: false,
-            }],
+            tracked_godot_versions: vec![GodotEngineVersion::new(
+                "test".to_string(),
+                "test".to_string(),
+                "test".to_string(),
+                "test".to_string(),
+            )],
+            tracked_projects: vec![ProjectData::new(
+                "test".to_string(),
+                "test".to_string(),
+                Local::now().timestamp(),
+                false,
+                false,
+            )],
         };
 
         let directory = ConfigDirectoryService::new_test(

@@ -1,59 +1,80 @@
-import { ReactEventHandler, useEffect, useState } from "react";
 import { GodotEngineVersion } from "../data/GodotEngineVersion";
 import { ProjectData } from "../data/ProjectData";
-import styles from "./EnginePage.module.css";
+import styles from "../css-modules/EnginePage.module.css";
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import { IconButton } from "@mui/material";
 import { invoke } from "@tauri-apps/api";
 
 interface ProjectPageProps {
     installedGodotEngines: GodotEngineVersion[];
-    projects: ProjectData[];
+    allProjects: ProjectData[];
+    setProjectEngineVersion: (projectName: string, engineName: string) => void;
 }
 
 function ProjectPage(props: ProjectPageProps) {
-    const [engines, setEngines] = useState<GodotEngineVersion[]>([]);
 
-    useEffect(() => {
-        setEngines(props.installedGodotEngines);
-    }, [props.installedGodotEngines]);
+    console.log("All projects", props.allProjects)
 
     function selectVersion(projectData: ProjectData, event: React.FormEvent<HTMLSelectElement>): void {
-        invoke("set_engine_version_for_project", { projectName: projectData.projectName, engineName: event.currentTarget.value })
+        props.setProjectEngineVersion(projectData.projectName, event.currentTarget.value)
+    }
+
+    function formatDate(lastDateOpened: number): string {
+        console.log("last date opened", lastDateOpened);
+        if (lastDateOpened > 0) {
+            return new Date(lastDateOpened).toDateString()
+        } else {
+            return "N/A"
+        }
     }
 
     function engineVersionDropdown(selectedValue: GodotEngineVersion | null, projectData: ProjectData): JSX.Element {
-
         return (
-            <select defaultValue={selectedValue?.engineName} name="engines" id="engines" onSelect={(evt) => selectVersion(projectData, evt)}>
-                {engines.map(engine =>
-                    <option value={engine.engineName}>{engine.engineName}</option>
+            <select defaultValue={selectedValue?.engineName} name="engines" id="engines" onChange={(evt) => selectVersion(projectData, evt)}>
+                <option value="NA" key={"NA"}>N/A</option>
+                {props.installedGodotEngines.map(engine =>
+                    <option value={engine.engineName} key={engine.engineName}>{engine.engineName}</option>
                 )}
             </select>
         )
     }
 
     function findEngineVersion(engineName: string): GodotEngineVersion | null {
-        return engines.find(engine => engine.engineName == engineName) ?? null;
+        return props.installedGodotEngines.find(engine => engine.engineName == engineName) ?? null;
+    }
+
+    function launch(project: ProjectData) {
+        invoke("open_project", { projectName: project.projectName });
     }
 
     return (
         <div className={styles.widthFull}>
             <div className={styles.width95 + " " + styles.tableContainer}>
                 <table cellSpacing={"0"} className={styles.widthFull}>
-                    <tr>
-                        <th>Last Opened</th>
-                        <th>Name</th>
-                        <th>Engine Version</th>
-                        <th>Button</th>
-                    </tr>
-                    {props.projects.map(project => (
+                    <thead>
                         <tr>
-                            <td>{(new Date(project.lastOpened).toDateString())}</td>
-                            <td>{project.projectName}</td>
-                            <td>{engineVersionDropdown(findEngineVersion(project.engineVersion), project)}</td>
-                            <td>Button</td>
+                            <th>Last Opened</th>
+                            <th>Name</th>
+                            <th>Engine Version</th>
+                            <th></th>
                         </tr>
-                    ))}
-
+                    </thead>
+                    <tbody>
+                        {props.allProjects.sort((a, b) => b.lastDateOpened - a.lastDateOpened).map(project => (
+                            <tr key={project.projectName}>
+                                <td>{formatDate(project.lastDateOpened)}</td>
+                                <td>{project.projectName}</td>
+                                <td>{engineVersionDropdown(findEngineVersion(project.engineVersion), project)}</td>
+                                <td>
+                                    {project.engineValid ?
+                                        <IconButton onClick={() => launch(project)}>
+                                            <PlayArrowIcon color="primary" />
+                                        </IconButton>
+                                        : null}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
                 </table>
             </div>
         </div>

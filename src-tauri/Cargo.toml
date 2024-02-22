@@ -17,10 +17,12 @@ tauri = { version = "1.5", features = [ "path-all", "dialog-open", "shell-open"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 directories = "5.0.1"
-reqwest = "0.11.23"
+reqwest = {version = "0.11.23", features = ["stream"] }
 tokio = { version = "1.35.1", features = ["full"] }
 zip-extract = "0.1.2"
 regex = "1.10.2"
+chrono = "0.4.34"
+tokio-stream = "0.1.14"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

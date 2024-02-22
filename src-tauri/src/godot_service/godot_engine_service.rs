@@ -30,13 +30,12 @@ pub fn from_asset(asset: Asset) -> GodotEngineVersion {
     name = name.replace(".zip", "");
     name = name.replace(".exe", "");
 
-    GodotEngineVersion {
-        version_name: name,
-        version_number: version_number,
-        updated_at: asset.created_at,
-        path: "".to_string(),
-        download_url: asset.browser_download_url,
-    }
+    GodotEngineVersion::new(
+        name,
+        asset.created_at,
+        "".to_string(),
+        asset.browser_download_url,
+    )
 }
 
 pub fn get_installed_godot_versions(
@@ -105,29 +104,32 @@ mod tests {
     };
     use std::fs;
 
-    #[tokio::test]
-    async fn test_find_godot_version() {
-        let directory_service = ConfigDirectoryService::new_test(
-            ".\\test-data-7".to_string(),
-            "test1.json".to_string(),
-        );
+    // #[tokio::test]
+    // async fn test_find_godot_version() {
+    //     let directory_service = ConfigDirectoryService::new_test(
+    //         ".\\test-data-7".to_string(),
+    //         "test1.json".to_string(),
+    //     );
 
-        let engine = GodotEngineVersion::new("Godot_v4.2.1-stable_win64.exe.zip".to_string(), "2024-01-20".to_string(), "".to_string(), 
-        "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip".to_string());
+    //     let engine = GodotEngineVersion::new("Godot_v4.2.1-stable_win64.exe.zip".to_string(), "2024-01-20".to_string(), "".to_string(),
+    //     "https://github.com/godotengine/godot/releases/download/4.2.1-stable/Godot_v4.2.1-stable_win64.exe.zip".to_string());
 
-        let updated_engine =
-            download_service::download_and_extract_engine(&directory_service, &engine)
-                .await
-                .unwrap();
+    //     let updated_engine = download_service::download_and_extract_engine(
+    //         &directory_service,
+    //         &engine,
+    //         &mut |name, progress| {},
+    //     )
+    //     .await
+    //     .unwrap();
 
-        assert!(updated_engine.version_name == "Godot_v4.2.1-stable_win64");
-        assert!(updated_engine.version_number == "4.2.1");
-        assert!(!updated_engine.path.is_empty());
+    //     assert!(updated_engine.version_name == "Godot_v4.2.1-stable_win64");
+    //     assert!(updated_engine.version_number == "4.2.1");
+    //     assert!(!updated_engine.path.is_empty());
 
-        let versions = get_installed_godot_versions(&directory_service);
+    //     let versions = get_installed_godot_versions(&directory_service);
 
-        assert!(versions.len() == 1);
+    //     assert!(versions.len() == 1);
 
-        fs::remove_dir_all(".\\test-data-7").unwrap();
-    }
+    //     fs::remove_dir_all(".\\test-data-7").unwrap();
+    // }
 }

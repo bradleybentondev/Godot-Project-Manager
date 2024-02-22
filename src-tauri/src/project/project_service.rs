@@ -2,7 +2,9 @@ use crate::godot_service::godot_engine_version::GodotEngineVersion;
 
 use super::project_data::ProjectData;
 use directories::BaseDirs;
+use serde_json::to_string;
 use std::{
+    collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
@@ -21,7 +23,7 @@ impl ProjectDirectoryService {
     pub fn find_projects(&self) -> Vec<ProjectData> {
         let projects = Self::scan_path(PathBuf::from(&self.base_path));
 
-        return projects;
+        projects
     }
 
     fn scan_path(path: PathBuf) -> Vec<ProjectData> {
@@ -33,7 +35,13 @@ impl ProjectDirectoryService {
         for path in paths {
             let p = path.unwrap().path();
             if p.display().to_string().contains("project.godot") {
-                let project = Self::create_project_data(p);
+                let project = ProjectData::new(
+                    p.to_str().unwrap().to_string(),
+                    "".to_string(),
+                    -1,
+                    false,
+                    false,
+                );
                 project_paths.push(project);
                 return project_paths;
             }
@@ -52,23 +60,7 @@ impl ProjectDirectoryService {
             project_paths.append(&mut result)
         }
 
-        return project_paths;
-    }
-
-    fn create_project_data(path: PathBuf) -> ProjectData {
-        let path = path.to_str().unwrap().replace("\\", "/");
-        let split: Vec<&str> = path.split("/").collect();
-
-        let folder_name = split[split.len() - 2];
-
-        return ProjectData {
-            project_name: folder_name.to_string(),
-            project_path: path,
-            project_version: "".to_string(),
-            last_date_opened: "".to_string(),
-            path_valid: false,
-            engine_valid: false,
-        };
+        project_paths
     }
 }
 
@@ -78,23 +70,35 @@ impl ProjectDirectoryService {
 pub fn project_reconciliation(
     existing_projects: Vec<ProjectData>,
     found_projects: Vec<ProjectData>,
-    all_godot_versions: Vec<GodotEngineVersion>,
+    all_godot_versions: &Vec<GodotEngineVersion>,
 ) -> Vec<ProjectData> {
-    let mut reconciled_projects: Vec<ProjectData> = existing_projects;
+    let existing_project_set: HashMap<String, ProjectData> = existing_projects
+        .into_iter()
+        .map(|x| (x.project_name.clone(), x))
+        .collect();
 
-    for project in found_projects {
-        if !reconciled_projects
-            .iter()
-            .any(|p| p.project_name == project.project_path)
-        {
-            reconciled_projects.push(project.clone());
+    // for project in found_projects {
+    //     projectSet.insert(project.project_name, project);
+    // }
+
+    let mut reconciled_projects = found_projects;
+
+    for project in &mut reconciled_projects {
+        if existing_project_set.contains_key(&project.project_name) {
+            project.engine_version = existing_project_set[&project.project_name]
+                .engine_version
+                .clone();
+
+            project.last_date_opened = existing_project_set[&project.project_name]
+                .last_date_opened
+                .clone();
         }
     }
 
     validate_project_paths(&mut reconciled_projects);
-    validate_godot_versions(&mut reconciled_projects, all_godot_versions);
+    validate_godot_versions(&mut reconciled_projects, &all_godot_versions);
 
-    return reconciled_projects;
+    reconciled_projects
 }
 
 /// Checks each ProjectData object and sets path_valid based on if the path it holds is valid or not
@@ -107,12 +111,12 @@ pub fn validate_project_paths(projects: &mut Vec<ProjectData>) {
 /// Checks each ProjectData object and sets engine_valid based on if there is a matching engine version and the path to the engine version is valid
 pub fn validate_godot_versions(
     projects: &mut Vec<ProjectData>,
-    godot_versions: Vec<GodotEngineVersion>,
+    godot_versions: &Vec<GodotEngineVersion>,
 ) {
-    let mut godot_versions_iter = godot_versions.iter();
     for project in projects {
-        let godot_version =
-            godot_versions_iter.find(|godot| godot.version_name == project.project_version);
+        let godot_version = godot_versions
+            .iter()
+            .find(|godot| godot.version_name == project.engine_version);
         project.engine_valid =
             godot_version.is_some() && PathBuf::from(&godot_version.unwrap().path).exists();
     }
@@ -126,6 +130,7 @@ pub fn open_project(project_path: PathBuf) {
 
 #[cfg(test)]
 mod tests {
+    use chrono::Local;
     use directories::BaseDirs;
     use std::{
         fs::{self, File},
@@ -192,46 +197,42 @@ mod tests {
 
     #[test]
     fn test_project_reconciliation() {
-        let existing = vec![ProjectData {
-            project_name: "test".to_string(),
-            project_path: "test".to_string(),
-            project_version: "V1".to_string(),
-            last_date_opened: "".to_string(),
-            path_valid: true,
-            engine_valid: false,
-        }];
+        let existing = vec![ProjectData::new(
+            "test".to_string(),
+            "V1".to_string(),
+            Local::now().timestamp(),
+            true,
+            false,
+        )];
 
         let found = vec![
-            ProjectData {
-                project_name: "test".to_string(),
-                project_path: "test".to_string(),
-                project_version: "".to_string(),
-                last_date_opened: "".to_string(),
-                path_valid: true,
-                engine_valid: false,
-            },
-            ProjectData {
-                project_name: "test2".to_string(),
-                project_path: "test2".to_string(),
-                project_version: "".to_string(),
-                last_date_opened: "".to_string(),
-                path_valid: true,
-                engine_valid: false,
-            },
+            ProjectData::new(
+                "test".to_string(),
+                "".to_string(),
+                Local::now().timestamp(),
+                true,
+                false,
+            ),
+            ProjectData::new(
+                "test2".to_string(),
+                "".to_string(),
+                Local::now().timestamp(),
+                true,
+                false,
+            ),
         ];
 
-        let godot_projects = vec![GodotEngineVersion {
-            version_name: "godot 1".to_string(),
-            version_number: "1".to_string(),
-            path: "".to_string(),
-            updated_at: "".to_string(),
-            download_url: "".to_string(),
-        }];
+        let godot_projects = vec![GodotEngineVersion::new(
+            "godot 1".to_string(),
+            "1".to_string(),
+            "".to_string(),
+            "".to_string(),
+        )];
 
-        let reconciled = project_reconciliation(existing, found, godot_projects);
+        let reconciled = project_reconciliation(existing, found, &godot_projects);
 
         assert!(reconciled.len() == 2);
-        assert!(reconciled.first().unwrap().project_version == "V1");
+        assert!(reconciled.first().unwrap().engine_version == "V1");
         assert!(reconciled.first().unwrap().path_valid == false);
         assert!(reconciled.first().unwrap().engine_valid == false);
     }

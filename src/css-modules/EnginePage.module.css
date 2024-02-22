@@ -30,3 +30,7 @@ table td {
     border-collapse: collapse;
     padding-left: 20px;
 }
+
+.progressBar {
+    max-width: 50px;
+}

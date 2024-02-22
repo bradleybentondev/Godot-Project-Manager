@@ -1,6 +1,6 @@
 import { PageEnum } from "../data/PageEnum";
 import { ProjectData } from "../data/ProjectData";
-import styles from "./SideBar.module.css"
+import styles from "../css-modules/SideBar.module.css"
 
 interface SideBarProps {
   setPage: React.Dispatch<React.SetStateAction<PageEnum>>;
@@ -37,7 +37,7 @@ function SideBar(props: SideBarProps) {
       </nav>
 
       <div className={styles.mostRecents}>
-        {props.projects.map(data =>
+        {props.projects.sort((p1, p2) => p1.lastDateOpened - p2.lastDateOpened).slice(0, Math.min(3, props.projects.length)).map(data =>
           <div key={data.projectName}>{data.projectName}</div>
         )}
 

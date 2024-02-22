@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import styles from "./SettingsPage.module.css"
+import styles from "../css-modules/SettingsPage.module.css"
 import AddIcon from '@mui/icons-material/Add';
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api";

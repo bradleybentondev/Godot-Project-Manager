@@ -27,47 +27,53 @@ function App() {
     // Get config stored projects
     // get local scanned projects
 
-    invoke<GodotEngineResponse>("get_engine_versions").then(response => {
-      console.log(response);
-      setAllEngines(response.allVersions);
-    })
+    let allEngines = await invoke<GodotEngineResponse>("get_engine_versions");
+    setAllEngines(allEngines.allVersions);
+    console.log("get all engines", allEngines);
 
-    invoke<GodotEngineVersion[]>("get_installed_versions").then(response => {
-      setInstalledEngines(response);
-    })
+
+    let installedVersions = await invoke<GodotEngineVersion[]>("get_installed_versions");
+    setInstalledEngines(installedVersions);
+    console.log("get installed engines", installedVersions);
+
 
     getAllProjects();
 
     invoke<string[]>("get_project_paths").then(response => {
-      console.log("get_project_paths", response)
       setProjectPaths(response);
     })
   }
 
   function testData(): ProjectData[] {
     return [
-      new ProjectData("Some project", "test", "2023-08-19", "4.1.2 Mono", false),
-      new ProjectData("Some project 2", "test2", "2023-05-19", "3.1.2", false),
-      new ProjectData("Some project 3", "test3", "2023-07-19", "4.2.2", false),
-      new ProjectData("Some project 4", "test4", "2023-06-19", "3.3.2 Mono", false),
-    ].sort((a, b) => b.lastOpened - a.lastOpened);
+      new ProjectData("Some project", "test", "2023-08-19", "4.1.2 Mono", false, false),
+      new ProjectData("Some project 2", "test2", "2023-05-19", "3.1.2", false, false),
+      new ProjectData("Some project 3", "test3", "2023-07-19", "4.2.2", false, false),
+      new ProjectData("Some project 4", "test4", "2023-06-19", "3.3.2 Mono", false, false),
+    ].sort((a, b) => b.lastDateOpened - a.lastDateOpened);
   }
 
   function getAllProjects() {
     invoke<ProjectData[]>("get_all_projects").then(response => {
+      console.log("get all projects", response);
       setProjects(response);
-      console.log(response);
+    })
+  }
+
+  function setProjectEngineVersion(projectName: string, engineName: string) {
+    invoke<ProjectData[]>("set_engine_version_for_project", { projectName: projectName, engineName: engineName }).then(projects => {
+      setProjects(projects);
     })
   }
 
   function deleteVersion(engineName: string) {
     invoke<GodotEngineVersion[]>("remove_installed_version", { engineVersionName: engineName }).then(response => {
-      console.log(response);
       setInstalledEngines(response);
     })
   }
 
   function downloadEngine(engineName: string) {
+    console.log("downloading version");
     invoke("download_engine_version", { engineName: engineName }).then(response => {
       console.log(response);
       invoke<GodotEngineVersion[]>("get_installed_versions").then(response => {
@@ -85,7 +91,7 @@ function App() {
       <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
 
       {page == PageEnum.Projects ? (
-        <ProjectPage installedGodotEngines={installedEngines} projects={projects} />
+        <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setProjectEngineVersion={setProjectEngineVersion} />
       ) : page == PageEnum.Engines ? (
         <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
       ) : page == PageEnum.Settings ? (

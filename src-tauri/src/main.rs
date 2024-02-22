@@ -1,6 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::collections::HashMap;
+
+use chrono::{DateTime, Local};
 use directory::config_directory_service::{self, ConfigDirectoryService};
 use fetcher::download_service::{self, filter_assets_by_name};
 use godot_service::{godot_engine_service, godot_engine_version::GodotEngineVersion};
@@ -11,15 +14,16 @@ use project::{
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-pub mod command;
+mod command;
 mod directory;
 mod environmnet;
 mod fetcher;
-pub mod godot_service;
+mod godot_service;
 mod project;
 mod test_data;
 
-pub struct DataState(Mutex<Data>);
+pub struct DataState(Mutex<Data>, Mutex<HashMap<String, usize>>);
+
 pub struct Data {
     all_godot_engine_versions: Vec<GodotEngineVersion>,
     installed_godot_engine_versions: Vec<GodotEngineVersion>,
@@ -63,7 +67,7 @@ async fn download_engine_version(
     state: tauri::State<'_, DataState>,
     engine_name: String,
 ) -> Result<(), ()> {
-    let mut state_guard = state.0.lock().await;
+    let state_guard = state.0.lock().await;
 
     if let Some(_) = state_guard
         .installed_godot_engine_versions
@@ -75,16 +79,22 @@ async fn download_engine_version(
 
     let engine = state_guard
         .all_godot_engine_versions
-        .iter()
+        .clone()
+        .into_iter()
         .find(|engine| engine.version_name == engine_name)
         .unwrap();
+
+    drop(state_guard);
 
     // download
     let directory_service = ConfigDirectoryService::new();
 
-    let updated_engine = download_service::download_and_extract_engine(&directory_service, engine)
-        .await
-        .unwrap();
+    let updated_engine =
+        download_service::download_and_extract_engine(&directory_service, &engine, &state)
+            .await
+            .unwrap();
+
+    let mut state_guard = state.0.lock().await;
 
     let mut installed_versions = state_guard.installed_godot_engine_versions.clone();
     installed_versions.push(updated_engine);
@@ -101,10 +111,19 @@ async fn get_installed_versions(
     let directory_service = ConfigDirectoryService::new();
     let installed_versions = godot_engine_service::get_installed_godot_versions(&directory_service);
 
-    let mut state_guard = state.0.lock().await;
-    state_guard.installed_godot_engine_versions = installed_versions.clone();
+    let guard = state.1.lock().await;
 
-    Ok(installed_versions)
+    // Don't include versions actively downloading
+    let filtered: Vec<GodotEngineVersion> = installed_versions
+        .into_iter()
+        .filter(|engine| !guard.contains_key(&engine.version_name))
+        .collect();
+    drop(guard);
+
+    let mut state_guard = state.0.lock().await;
+    state_guard.installed_godot_engine_versions = filtered.clone();
+
+    Ok(filtered)
 }
 
 #[tauri::command]
@@ -133,7 +152,19 @@ async fn remove_installed_version(
 #[tauri::command]
 async fn get_all_projects(state: tauri::State<'_, DataState>) -> Result<Vec<ProjectData>, ()> {
     let config_directory = ConfigDirectoryService::new();
-    Ok(get_all_projects_from_dirs(&config_directory))
+    let scanned_projects = get_all_projects_from_dirs(&config_directory);
+    let config = config_directory_service::get_project_config(&config_directory);
+    let mut state_guard = state.0.lock().await;
+
+    let projects = project_service::project_reconciliation(
+        config.tracked_projects,
+        scanned_projects,
+        &state_guard.installed_godot_engine_versions,
+    );
+
+    config_directory_service::save_projects_to_config(&config_directory, &projects);
+    state_guard.projects = projects.clone();
+    Ok(projects)
 }
 
 fn get_all_projects_from_dirs(config_directory: &ConfigDirectoryService) -> Vec<ProjectData> {
@@ -190,12 +221,107 @@ async fn remove_project_path(
     Ok(config.tracked_directories)
 }
 
+#[tauri::command]
+async fn set_engine_version_for_project(
+    state: tauri::State<'_, DataState>,
+    project_name: String,
+    engine_name: String,
+) -> Result<Vec<ProjectData>, ()> {
+    let config_directory = ConfigDirectoryService::new();
+    let mut config = config_directory_service::get_project_config(&config_directory);
+
+    let state_guard = state.0.lock().await;
+    let godot_versions = &state_guard.installed_godot_engine_versions;
+
+    let project = config
+        .tracked_projects
+        .iter_mut()
+        .find(|project| project.project_name == project_name)
+        .expect(format!("Could not find tracked project with name {}", project_name).as_str());
+
+    let godot_version = godot_versions
+        .iter()
+        .find(|engine| engine.version_name == engine_name);
+
+    if let Some(engine_version) = godot_version {
+        project.engine_version = engine_version.version_name.clone();
+        project.engine_valid = true;
+    } else {
+        project.engine_version = "".to_string();
+        project.engine_valid = false;
+    }
+
+    config_directory_service::save_project_config(&config_directory, &config);
+    Ok(config.tracked_projects)
+}
+
+#[tauri::command]
+async fn poll_download_status_list(
+    state: tauri::State<'_, DataState>,
+) -> Result<Vec<(String, usize)>, ()> {
+    let state_guard = state.1.lock().await;
+    let pairs = state_guard
+        .iter()
+        .map(|(name, score)| (name.clone(), score.clone()))
+        .collect();
+
+    Ok(pairs)
+}
+
+#[tauri::command]
+async fn open_project(state: tauri::State<'_, DataState>, project_name: String) -> Result<(), ()> {
+    let mut state_guard = state.0.lock().await;
+
+    let project = state_guard
+        .projects
+        .iter()
+        .find(|project| project.project_name == project_name)
+        .expect(format!("Did not find a project with name {}", project_name).as_str());
+
+    println!("Project last date opened is {}", project.last_date_opened);
+    println!("state_guard {:?}", state_guard.projects.clone());
+
+    let godot_engine = state_guard
+        .installed_godot_engine_versions
+        .iter()
+        .find(|engine| engine.version_name == project.engine_version)
+        .expect(
+            format!(
+                "Did not find a godot engine with name {}",
+                project.engine_version
+            )
+            .as_str(),
+        );
+
+    let p = project.clone();
+    let g = godot_engine.clone();
+
+    state_guard
+        .projects
+        .iter_mut()
+        .find(|project| project.project_name == project_name)
+        .expect(format!("Did not find a project with name {}", project_name).as_str())
+        .last_date_opened = Local::now().timestamp_millis();
+
+    let config_directory = ConfigDirectoryService::new();
+    config_directory_service::save_projects_to_config(&config_directory, &state_guard.projects);
+
+    drop(state_guard);
+
+    command::command::open_project(&p, &g);
+
+    Ok(())
+}
+
 fn main() {
-    let state = DataState(Mutex::new(Data {
-        all_godot_engine_versions: vec![],
-        installed_godot_engine_versions: vec![],
-        projects: vec![],
-    }));
+    let state = DataState(
+        Mutex::new(Data {
+            all_godot_engine_versions: vec![],
+            installed_godot_engine_versions: vec![],
+            projects: vec![],
+        }),
+        Mutex::new(HashMap::new()),
+    );
 
     tauri::Builder::default()
         .manage(state)
@@ -208,6 +334,9 @@ fn main() {
             save_project_path,
             get_project_paths,
             remove_project_path,
+            set_engine_version_for_project,
+            poll_download_status_list,
+            open_project,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

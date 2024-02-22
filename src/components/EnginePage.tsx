@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { GodotEngineVersion } from "../data/GodotEngineVersion";
-import styles from "./EnginePage.module.css";
+import styles from "../css-modules/EnginePage.module.css";
+import DownloadIcon from '@mui/icons-material/Download';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { IconButton } from "@mui/material";
+import { invoke } from "@tauri-apps/api";
 
 interface EnginePageProps {
     allGodotEngines: GodotEngineVersion[];
@@ -11,6 +15,7 @@ interface EnginePageProps {
 
 function EnginePage(props: EnginePageProps) {
     const [availableEngines, setAvailableEngines] = useState<GodotEngineVersion[]>([]);
+    const [downloadStatusList, setDownloadStatusList] = useState<[string, number][]>([]);
 
     useEffect(() => {
         let availableEngines = props.allGodotEngines.filter(engine => props.installedGodotEngines.find(installedEngine => {
@@ -18,56 +23,85 @@ function EnginePage(props: EnginePageProps) {
         }) === undefined);
 
         setAvailableEngines(availableEngines);
-        console.log("availableEngines", availableEngines);
-        console.log("installed", props.installedGodotEngines);
 
     }, [props.allGodotEngines, props.installedGodotEngines]);
 
+    useEffect(() => {
+        let timer = setInterval(() => {
+            invoke<[string, number][]>("poll_download_status_list").then(data => setDownloadStatusList(data));
+        }, 100);
+
+        // this will clear Timeout
+        // when component unmount like in willComponentUnmount
+        // and show will not change to true
+        return () => {
+            clearTimeout(timer);
+        };
+    }, []);
+
+    function downloadStatusOrButton(engine: GodotEngineVersion): ReactNode {
+        let status = downloadStatusList.find(value => value[0] === engine.engineName);
+        if (status) {
+            return <progress className={styles.progressBar} value={status[1] / 100} />
+        } else {
+            return (
+                <IconButton onClick={() => props.downloadEngineFunc(engine.engineName)}>
+                    <DownloadIcon color={"primary"} />
+                </IconButton>
+            )
+        }
+    }
+
+    function table(engines: GodotEngineVersion[], buttonType: "install" | "delete"): ReactNode {
+
+        function getButton(engine: GodotEngineVersion) {
+            return buttonType === "install" ? (
+                <IconButton onClick={() => props.deleteVersion(engine.engineName)}>
+                    <DeleteForeverIcon color={"error"} />
+                </IconButton>
+            ) : downloadStatusOrButton(engine)
+        }
+
+
+        return <table cellSpacing={"0"} className={styles.widthFull}>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Version</th>
+                    <th>Date Uploaded</th>
+                    <th style={{ width: "100px" }}></th>
+                </tr>
+            </thead>
+            <tbody>
+                {engines.map(engine => (
+                    <tr key={engine.engineName}>
+                        <td>{engine.engineName}</td>
+                        <td>{engine.engineVersion}</td>
+                        <td>{new Date(engine.updatedAt).toDateString()}</td>
+                        <td>
+                            {getButton(engine)}
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+
+        </table>
+    }
+
+
     return (
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
             {props.installedGodotEngines.length > 0 ?
                 <div className={styles.widthFull}>
                     <div className={styles.width95 + " " + styles.tableContainer}>
-                        <table cellSpacing={"0"} className={styles.widthFull}>
-                            <tr>
-                                <th>Name</th>
-                                <th>Version</th>
-                                <th>Date Uploaded</th>
-                                <th>DButton</th>
-                            </tr>
-                            {props.installedGodotEngines.map(engine => (
-                                <tr>
-                                    <td>{engine.engineName}</td>
-                                    <td>{engine.engineVersion}</td>
-                                    <td>{new Date(engine.updatedAt).toDateString()}</td>
-                                    <td><button onClick={() => props.deleteVersion(engine.engineName)}>Delete</button></td>
-                                </tr>
-                            ))}
-
-                        </table>
+                        {table(props.installedGodotEngines, "install")}
                     </div>
                 </div>
                 : null}
 
             <div className={styles.widthFull}>
                 <div className={styles.width95 + " " + styles.tableContainer}>
-                    <table cellSpacing={"0"} className={styles.widthFull}>
-                        <tr>
-                            <th>Name</th>
-                            <th>Version</th>
-                            <th>Date Uploaded</th>
-                            <th>DButton</th>
-                        </tr>
-                        {availableEngines.map(engine => (
-                            <tr>
-                                <td>{engine.engineName}</td>
-                                <td>{engine.engineVersion}</td>
-                                <td>{new Date(engine.updatedAt).toDateString()}</td>
-                                <td><button onClick={() => props.downloadEngineFunc(engine.engineName)}>Download</button></td>
-                            </tr>
-                        ))}
-
-                    </table>
+                    {table(availableEngines, "delete")}
                 </div>
             </div>
         </div>
