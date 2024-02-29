@@ -3,6 +3,7 @@ import { GodotEngineVersion } from "../data/GodotEngineVersion";
 import styles from "../css-modules/EnginePage.module.css";
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { IconButton } from "@mui/material";
 import { invoke } from "@tauri-apps/api";
 
@@ -52,13 +53,23 @@ function EnginePage(props: EnginePageProps) {
         }
     }
 
+    function launch(engineName: string) {
+        invoke("open_engine", { engineName: engineName });
+    }
+
     function table(engines: GodotEngineVersion[], buttonType: "install" | "delete"): ReactNode {
 
         function getButton(engine: GodotEngineVersion) {
             return buttonType === "install" ? (
-                <IconButton onClick={() => props.deleteVersion(engine.engineName)}>
-                    <DeleteForeverIcon color={"error"} />
-                </IconButton>
+                <div>
+                    <IconButton onClick={() => props.deleteVersion(engine.engineName)}>
+                        <DeleteForeverIcon color={"error"} />
+                    </IconButton>
+                    <IconButton onClick={() => launch(engine.engineName)}>
+                        <PlayArrowIcon color="primary" />
+                    </IconButton>
+                </div>
+
             ) : downloadStatusOrButton(engine)
         }
 

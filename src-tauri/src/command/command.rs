@@ -5,18 +5,23 @@ use crate::{
 };
 
 pub fn open_project(project: &ProjectData, engine: &GodotEngineVersion) {
-    // Command::new("C:\\Users\\bbent\\AppData\\Roaming\\godot_project_manager\\engines\\Godot_v4.2.1-stable_mono_win64\\Godot_v4.2.1-stable_mono_win64.exe").
-    // arg("C:\\Users\\bbent\\Desktop\\AllProjectFiles\\godot\\arenagame\\project.godot").spawn().unwrap();
-
-    println!(
-        "running command {} {}",
-        &engine.executable_path, &project.project_path
-    );
     let output = if cfg!(target_os = "windows") {
         Command::new(&engine.executable_path)
             .arg(&project.project_path)
             .spawn()
             .unwrap()
+    } else {
+        Command::new("sh")
+            .arg("-c")
+            .arg("echo hello")
+            .spawn()
+            .unwrap()
+    };
+}
+
+pub fn open_engine(engine: &GodotEngineVersion) {
+    let output = if cfg!(target_os = "windows") {
+        Command::new(&engine.executable_path).spawn().unwrap()
     } else {
         Command::new("sh")
             .arg("-c")

@@ -1,0 +1,66 @@
+.widthFull {
+    width: 100%;
+}
+
+.width90 {
+    width: 90%;
+}
+
+.width95 {
+    width: 95%;
+}
+
+.tableContainer {
+    margin: 20px;
+    background-color: white;
+    border-radius: 10px;
+}
+
+table tr {
+    height: 75px;
+}
+
+table th {
+    text-align: left;
+    padding-left: 20px;
+    border-bottom: 1px solid rgb(214, 214, 214);
+    font-weight: normal;
+}
+
+table td {
+    border-bottom: 1px solid rgb(214, 214, 214);
+    border-collapse: collapse;
+    padding-left: 20px;
+}
+
+.progressBar {
+    max-width: 50px;
+}
+
+.dropdown {
+    display: flex;
+    position: relative;
+}
+
+.dropdown select {
+    all: unset;
+    display: flex;
+    cursor: pointer;
+    box-shadow: 1px 1px 5px rgb(216, 216, 216);
+    border-radius: 2px;
+    padding: 5px 30px 5px 5px;
+}
+
+.dropdownIcon {
+    right: 25px;
+    top: 5px;
+    position: relative;
+}
+
+.bold {
+    font-weight: bolder;
+}
+
+select option {
+    padding: 20px;
+}

@@ -121,8 +121,6 @@ pub fn get_project_config(directory: &ConfigDirectoryService) -> ProjectConfig {
 
     let path = directory.config_file_path();
 
-    println!("Trying to read from path {}", &path.display());
-
     let contents = fs::read_to_string(&path)
         .expect(format!("Could not read data from file at path {}", path.display()).as_str());
 

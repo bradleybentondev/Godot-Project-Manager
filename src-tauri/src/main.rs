@@ -228,13 +228,12 @@ async fn set_engine_version_for_project(
     engine_name: String,
 ) -> Result<Vec<ProjectData>, ()> {
     let config_directory = ConfigDirectoryService::new();
-    let mut config = config_directory_service::get_project_config(&config_directory);
 
-    let state_guard = state.0.lock().await;
-    let godot_versions = &state_guard.installed_godot_engine_versions;
+    let mut state_guard = state.0.lock().await;
+    let godot_versions = state_guard.installed_godot_engine_versions.clone();
 
-    let project = config
-        .tracked_projects
+    let project = state_guard
+        .projects
         .iter_mut()
         .find(|project| project.project_name == project_name)
         .expect(format!("Could not find tracked project with name {}", project_name).as_str());
@@ -251,8 +250,8 @@ async fn set_engine_version_for_project(
         project.engine_valid = false;
     }
 
-    config_directory_service::save_project_config(&config_directory, &config);
-    Ok(config.tracked_projects)
+    config_directory_service::save_projects_to_config(&config_directory, &state_guard.projects);
+    Ok(state_guard.projects.clone())
 }
 
 #[tauri::command]
@@ -269,7 +268,10 @@ async fn poll_download_status_list(
 }
 
 #[tauri::command]
-async fn open_project(state: tauri::State<'_, DataState>, project_name: String) -> Result<(), ()> {
+async fn open_project(
+    state: tauri::State<'_, DataState>,
+    project_name: String,
+) -> Result<(String, i64), ()> {
     let mut state_guard = state.0.lock().await;
 
     let project = state_guard
@@ -296,12 +298,14 @@ async fn open_project(state: tauri::State<'_, DataState>, project_name: String) 
     let p = project.clone();
     let g = godot_engine.clone();
 
+    let time = Local::now().timestamp_millis();
+
     state_guard
         .projects
         .iter_mut()
         .find(|project| project.project_name == project_name)
         .expect(format!("Did not find a project with name {}", project_name).as_str())
-        .last_date_opened = Local::now().timestamp_millis();
+        .last_date_opened = time.clone();
 
     let config_directory = ConfigDirectoryService::new();
     config_directory_service::save_projects_to_config(&config_directory, &state_guard.projects);
@@ -309,6 +313,28 @@ async fn open_project(state: tauri::State<'_, DataState>, project_name: String) 
     drop(state_guard);
 
     command::command::open_project(&p, &g);
+
+    Ok((p.project_name.clone(), time))
+}
+
+#[tauri::command]
+async fn open_engine(state: tauri::State<'_, DataState>, engine_name: String) -> Result<(), ()> {
+    let mut state_guard = state.0.lock().await;
+
+    let godot_engine = state_guard
+        .installed_godot_engine_versions
+        .iter()
+        .find(|engine| engine.version_name == engine_name)
+        .expect(format!("Did not find a godot engine with name {}", &engine_name).as_str());
+
+    let g = godot_engine.clone();
+
+    let config_directory = ConfigDirectoryService::new();
+    config_directory_service::save_projects_to_config(&config_directory, &state_guard.projects);
+
+    drop(state_guard);
+
+    command::command::open_engine(&g);
 
     Ok(())
 }
@@ -337,6 +363,7 @@ fn main() {
             set_engine_version_for_project,
             poll_download_status_list,
             open_project,
+            open_engine,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

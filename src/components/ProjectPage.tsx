@@ -1,9 +1,10 @@
 import { GodotEngineVersion } from "../data/GodotEngineVersion";
 import { ProjectData } from "../data/ProjectData";
-import styles from "../css-modules/EnginePage.module.css";
+import styles from "../css-modules/ProjectPage.module.css";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { IconButton } from "@mui/material";
 import { invoke } from "@tauri-apps/api";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface ProjectPageProps {
     installedGodotEngines: GodotEngineVersion[];
@@ -12,8 +13,8 @@ interface ProjectPageProps {
 }
 
 function ProjectPage(props: ProjectPageProps) {
+    // const [projects, setProjects] = useState(props.allProjects);
 
-    console.log("All projects", props.allProjects)
 
     function selectVersion(projectData: ProjectData, event: React.FormEvent<HTMLSelectElement>): void {
         props.setProjectEngineVersion(projectData.projectName, event.currentTarget.value)
@@ -30,12 +31,15 @@ function ProjectPage(props: ProjectPageProps) {
 
     function engineVersionDropdown(selectedValue: GodotEngineVersion | null, projectData: ProjectData): JSX.Element {
         return (
-            <select defaultValue={selectedValue?.engineName} name="engines" id="engines" onChange={(evt) => selectVersion(projectData, evt)}>
-                <option value="NA" key={"NA"}>N/A</option>
-                {props.installedGodotEngines.map(engine =>
-                    <option value={engine.engineName} key={engine.engineName}>{engine.engineName}</option>
-                )}
-            </select>
+            <div className={styles.dropdown} >
+                <select defaultValue={selectedValue?.engineName} name="engines" id="engines" onChange={(evt) => selectVersion(projectData, evt)}>
+                    <option value="NA" key={"NA"}>N/A</option>
+                    {props.installedGodotEngines.map(engine =>
+                        <option value={engine.engineName} key={engine.engineName}>{engine.engineName}</option>
+                    )}
+                </select>
+                <ArrowDropDownIcon className={styles.dropdownIcon} />
+            </div >
         )
     }
 
@@ -43,8 +47,13 @@ function ProjectPage(props: ProjectPageProps) {
         return props.installedGodotEngines.find(engine => engine.engineName == engineName) ?? null;
     }
 
-    function launch(project: ProjectData) {
-        invoke("open_project", { projectName: project.projectName });
+    async function launch(project: ProjectData) {
+        const [name, time] = await invoke<[string, number]>("open_project", { projectName: project.projectName });
+        // let p = projects.find(p => p.projectName === name);
+        // if (p) {
+        //     p.lastDateOpened = time;
+        // }
+        // setProjects([...projects]);
     }
 
     return (
@@ -53,8 +62,8 @@ function ProjectPage(props: ProjectPageProps) {
                 <table cellSpacing={"0"} className={styles.widthFull}>
                     <thead>
                         <tr>
-                            <th>Last Opened</th>
                             <th>Name</th>
+                            <th>Last Opened</th>
                             <th>Engine Version</th>
                             <th></th>
                         </tr>
@@ -62,8 +71,8 @@ function ProjectPage(props: ProjectPageProps) {
                     <tbody>
                         {props.allProjects.sort((a, b) => b.lastDateOpened - a.lastDateOpened).map(project => (
                             <tr key={project.projectName}>
+                                <td><span className={styles.bold}>{project.projectName}</span><br /><span style={{ fontSize: "x-small" }}>{project.projectPath}</span></td>
                                 <td>{formatDate(project.lastDateOpened)}</td>
-                                <td>{project.projectName}</td>
                                 <td>{engineVersionDropdown(findEngineVersion(project.engineVersion), project)}</td>
                                 <td>
                                     {project.engineValid ?
