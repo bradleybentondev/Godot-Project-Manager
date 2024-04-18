@@ -1,3 +1,4 @@
+mod news;
 pub mod command;
 pub mod godot_service;
 pub mod service;

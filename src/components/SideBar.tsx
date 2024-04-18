@@ -19,29 +19,29 @@ function SideBar(props: SideBarProps) {
       </div>
 
       <nav className={styles.nav}>
-        <div>
-          <button onClick={() => props.setPage(PageEnum.Projects)}>Projects</button>
+        <div className={styles.navButton} onClick={() => props.setPage(PageEnum.Projects)}>
+          <span> Projects </span>
           <span className={styles.countBox}>{props.projectCount}</span>
         </div>
-        <div>
-          <button onClick={() => props.setPage(PageEnum.Engines)}>Versions</button>
+        <div className={styles.navButton} onClick={() => props.setPage(PageEnum.Engines)}>
+          <span >Versions</span>
           <span className={styles.countBox}>{props.engineCount}</span>
         </div>
-        <div>
-          <button onClick={() => props.setPage(PageEnum.News)}>News</button>
+        <div className={styles.navButton} onClick={() => props.setPage(PageEnum.News)}>
+          <span >News</span>
           <span className={styles.countBox}>{props.newsCount}</span>
         </div>
-        <div>
-          <button onClick={() => props.setPage(PageEnum.Settings)}>Settings</button>
+        <div className={styles.navButton} onClick={() => props.setPage(PageEnum.Settings)}>
+          <span >Settings</span>
         </div>
       </nav>
 
-      <div className={styles.mostRecents}>
+      {/* <div className={styles.mostRecents}>
         {props.projects.sort((p1, p2) => p1.lastDateOpened - p2.lastDateOpened).slice(0, Math.min(3, props.projects.length)).map(data =>
           <div key={data.projectName}>{data.projectName}</div>
         )}
 
-      </div>
+      </div> */}
 
     </div>
   );

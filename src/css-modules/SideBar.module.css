@@ -1,7 +1,7 @@
 .container {
     margin: 5px;
-    min-width: 250px;
-    max-width: 250px;
+    min-width: 200px;
+    max-width: 200px;
     box-shadow: 0px 0px 5px rgb(143, 143, 143);
     border-radius: 10px;
     display: flex;
@@ -17,15 +17,26 @@
 .nav {
     display: flex;
     flex-direction: column;
-    margin-left: 20px;
-    margin-right: 10px;
     margin-top: 40px;
 }
 
 .nav div {
+    padding-left: 20px;
+    padding-right: 20px;
     margin-bottom: 25px;
+    height: 40px;
     display: flex;
     justify-content: space-between;
+}
+
+.nav div span {
+    display: flex;
+    align-items: center;
+}
+
+.navButton:hover {
+    background-color: rgb(241, 251, 255);
+    cursor: pointer;
 }
 
 .countBox {

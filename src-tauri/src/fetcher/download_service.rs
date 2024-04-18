@@ -42,17 +42,13 @@ pub struct Release {
 /// This function will return an error if there was an error sending a request to the url.
 pub async fn get_available_releases() -> Result<Vec<Release>, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let body: String = if is_prod() {
-        client
-            .get(GITHUB_URL)
-            .header(USER_AGENT, "My Rust Program 1.0")
-            .send()
-            .await?
-            .text()
-            .await?
-    } else {
-        test_data::TEST_DATA.to_string()
-    };
+    let body: String = client
+        .get(GITHUB_URL)
+        .header(USER_AGENT, "My Rust Program 1.0")
+        .send()
+        .await?
+        .text()
+        .await?;
 
     let value: Vec<Release> = serde_json::from_str(&body).unwrap();
 

@@ -7,6 +7,7 @@ use chrono::{DateTime, Local};
 use directory::config_directory_service::{self, ConfigDirectoryService};
 use fetcher::download_service::{self, filter_assets_by_name};
 use godot_service::{godot_engine_service, godot_engine_version::GodotEngineVersion};
+use news::news::{get_news, NewsEntry};
 use project::{
     project_data::ProjectData,
     project_service::{self, ProjectDirectoryService},
@@ -19,6 +20,7 @@ mod directory;
 mod environmnet;
 mod fetcher;
 mod godot_service;
+pub mod news;
 mod project;
 mod test_data;
 
@@ -280,9 +282,6 @@ async fn open_project(
         .find(|project| project.project_name == project_name)
         .expect(format!("Did not find a project with name {}", project_name).as_str());
 
-    println!("Project last date opened is {}", project.last_date_opened);
-    println!("state_guard {:?}", state_guard.projects.clone());
-
     let godot_engine = state_guard
         .installed_godot_engine_versions
         .iter()
@@ -339,6 +338,11 @@ async fn open_engine(state: tauri::State<'_, DataState>, engine_name: String) ->
     Ok(())
 }
 
+#[tauri::command]
+async fn get_news_entries(state: tauri::State<'_, DataState>) -> Result<Vec<NewsEntry>, ()> {
+    Ok(get_news().await.unwrap())
+}
+
 fn main() {
     let state = DataState(
         Mutex::new(Data {
@@ -364,6 +368,7 @@ fn main() {
             poll_download_status_list,
             open_project,
             open_engine,
+            get_news_entries,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
