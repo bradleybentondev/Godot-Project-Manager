@@ -1,0 +1,37 @@
+.newsItem {
+    width: 300px;
+    /* Fixed width for each item */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image {
+    width: 100%;
+    height: auto;
+}
+
+.content {
+    padding: 16px;
+}
+
+.title {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.info {
+    font-size: 0.875rem;
+    color: #555;
+}
+
+.body {
+    margin-top: 8px;
+    font-size: 1rem;
+    color: #333;
+}

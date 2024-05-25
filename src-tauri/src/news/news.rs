@@ -1,17 +1,18 @@
 use regex::Regex;
 use reqwest::header::USER_AGENT;
 use scraper::{selectable::Selectable, ElementRef, Html, Selector};
+use serde::{Deserialize, Serialize};
 
 use crate::environmnet::is_prod;
 
 const NEWS_URL: &str = "https://godotengine.org/blog/";
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NewsEntry {
     title: String,
     info: String,
     body: String,
-    imageUrl: String,
+    image_url: String,
 }
 
 pub async fn get_news() -> Option<Vec<NewsEntry>> {
@@ -74,11 +75,11 @@ fn build_news_entry(element: ElementRef) -> NewsEntry {
             .next()
             .unwrap();
 
-    let imageUrlHtml = element.select(&thumbnail_selector).next().unwrap().html();
-    let mut imageUrl = "".to_string();
+    let image_url_html = element.select(&thumbnail_selector).next().unwrap().html();
+    let mut image_url = "".to_string();
 
-    if let Some(captured) = re.captures(&imageUrlHtml) {
-        imageUrl = "https://godotengine.org".to_string() + &captured[1];
+    if let Some(captured) = re.captures(&image_url_html) {
+        image_url = "https://godotengine.org".to_string() + &captured[1];
     }
 
     NewsEntry {
@@ -99,7 +100,7 @@ fn build_news_entry(element: ElementRef) -> NewsEntry {
             .unwrap()
             .to_string(),
         info: info,
-        imageUrl: imageUrl,
+        image_url,
     }
 }
 

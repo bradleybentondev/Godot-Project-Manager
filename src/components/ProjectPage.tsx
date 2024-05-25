@@ -58,8 +58,8 @@ function ProjectPage(props: ProjectPageProps) {
 
     return (
         <div className={styles.widthFull}>
-            <div className={styles.width95 + " " + styles.tableContainer}>
-                <table cellSpacing={"0"} className={styles.widthFull}>
+            <div className={styles.tableContainer}>
+                <table cellSpacing="0" className={styles.table}>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -70,16 +70,19 @@ function ProjectPage(props: ProjectPageProps) {
                     </thead>
                     <tbody>
                         {props.allProjects.sort((a, b) => b.lastDateOpened - a.lastDateOpened).map(project => (
-                            <tr key={project.projectName}>
-                                <td><span className={styles.bold}>{project.projectName}</span><br /><span style={{ fontSize: "x-small" }}>{project.projectPath}</span></td>
+                            <tr key={project.projectName} className={styles.tableRow}>
+                                <td>
+                                    <span className={styles.bold}>{project.projectName}</span><br />
+                                    <span className={styles.projectPath}>{project.projectPath}</span>
+                                </td>
                                 <td>{formatDate(project.lastDateOpened)}</td>
                                 <td>{engineVersionDropdown(findEngineVersion(project.engineVersion), project)}</td>
                                 <td>
-                                    {project.engineValid ?
+                                    {project.engineValid && (
                                         <IconButton onClick={() => launch(project)}>
-                                            <PlayArrowIcon color="primary" />
+                                            <PlayArrowIcon className={styles.iconButton} />
                                         </IconButton>
-                                        : null}
+                                    )}
                                 </td>
                             </tr>
                         ))}

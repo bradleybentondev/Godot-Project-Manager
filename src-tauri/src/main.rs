@@ -340,7 +340,8 @@ async fn open_engine(state: tauri::State<'_, DataState>, engine_name: String) ->
 
 #[tauri::command]
 async fn get_news_entries(state: tauri::State<'_, DataState>) -> Result<Vec<NewsEntry>, ()> {
-    Ok(get_news().await.unwrap())
+    let news_entries = get_news().await.unwrap();
+    Ok(news_entries)
 }
 
 fn main() {

@@ -9,6 +9,8 @@ import { ProjectData } from "./data/ProjectData";
 import ProjectPage from "./components/ProjectPage";
 import EnginePage from "./components/EnginePage";
 import SettingsPage from "./components/SettingsPage";
+import { NewsEntry } from "./data/NewsEntry";
+import NewsPage from "./components/NewsPage";
 
 function App() {
   const [page, setPage] = useState(PageEnum.Projects);
@@ -16,6 +18,8 @@ function App() {
   const [installedEngines, setInstalledEngines] = useState<GodotEngineVersion[]>([]);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [projectPaths, setProjectPaths] = useState<string[]>([]);
+  const [newsEntries, setNewsEntries] = useState<NewsEntry[]>([]);
+
 
   async function init() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -42,16 +46,12 @@ function App() {
     invoke<string[]>("get_project_paths").then(response => {
       setProjectPaths(response);
     })
+
+    invoke<NewsEntry[]>("get_news_entries").then(response => {
+      setNewsEntries(response);
+    })
   }
 
-  function testData(): ProjectData[] {
-    return [
-      new ProjectData("Some project", "test", "2023-08-19", "4.1.2 Mono", false, false),
-      new ProjectData("Some project 2", "test2", "2023-05-19", "3.1.2", false, false),
-      new ProjectData("Some project 3", "test3", "2023-07-19", "4.2.2", false, false),
-      new ProjectData("Some project 4", "test4", "2023-06-19", "3.3.2 Mono", false, false),
-    ].sort((a, b) => b.lastDateOpened - a.lastDateOpened);
-  }
 
   function getAllProjects() {
     invoke<ProjectData[]>("get_all_projects").then(response => {
@@ -96,6 +96,8 @@ function App() {
         <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
       ) : page == PageEnum.Settings ? (
         <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
+      ) : page == PageEnum.News ? (
+        <NewsPage newsEntries={newsEntries} />
       ) : null}
     </div>
   );
