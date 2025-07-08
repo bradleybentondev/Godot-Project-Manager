@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import styles from "./App.module.css";
 import SideBar from "./components/SideBar";
 import { PageEnum } from "./data/PageEnum";
 import { GodotEngineVersion } from "./data/GodotEngineVersion";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core"
 import { GodotEngineResponse } from "./data/GodotEngineResponse";
 import { ProjectData } from "./data/ProjectData";
 import ProjectPage from "./components/ProjectPage";
@@ -12,6 +12,13 @@ import SettingsPage from "./components/SettingsPage";
 import { NewsEntry } from "./data/NewsEntry";
 import NewsPage from "./components/NewsPage";
 
+// Theme context for dark mode detection
+export type ThemeContextType = {
+  isDarkMode: boolean;
+};
+
+export const ThemeContext = createContext<ThemeContextType>({ isDarkMode: false });
+
 function App() {
   const [page, setPage] = useState(PageEnum.Projects);
   const [allEngines, setAllEngines] = useState<GodotEngineVersion[]>([]);
@@ -19,7 +26,9 @@ function App() {
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [projectPaths, setProjectPaths] = useState<string[]>([]);
   const [newsEntries, setNewsEntries] = useState<NewsEntry[]>([]);
-
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
+    window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
 
   async function init() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -84,22 +93,41 @@ function App() {
 
   useEffect(() => {
     init();
+    
+    // Add event listener for changes in system color scheme preference
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleThemeChange = (e: MediaQueryListEvent) => {
+      setIsDarkMode(e.matches);
+    };
+    
+    // Modern browsers
+    darkModeMediaQuery.addEventListener('change', handleThemeChange);
+    
+    // Cleanup
+    return () => {
+      darkModeMediaQuery.removeEventListener('change', handleThemeChange);
+    };
   }, []);
 
   return (
-    <div className={styles.mainContainer}>
-      <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
+    <ThemeContext.Provider value={{ isDarkMode }}>
+      <div className={`${styles.mainContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+        <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
 
-      {page == PageEnum.Projects ? (
-        <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setProjectEngineVersion={setProjectEngineVersion} />
-      ) : page == PageEnum.Engines ? (
-        <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
-      ) : page == PageEnum.Settings ? (
-        <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
-      ) : page == PageEnum.News ? (
-        <NewsPage newsEntries={newsEntries} />
-      ) : null}
-    </div>
+        <div className={styles.contentContainer}>
+          {page == PageEnum.Projects ? (
+            <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setProjectEngineVersion={setProjectEngineVersion} />
+          ) : page == PageEnum.Engines ? (
+            <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
+          ) : page == PageEnum.Settings ? (
+            <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
+          ) : page == PageEnum.News ? (
+            <NewsPage newsEntries={newsEntries} />
+          ) : null}
+        </div>
+      </div>
+    </ThemeContext.Provider>
   );
 }
 

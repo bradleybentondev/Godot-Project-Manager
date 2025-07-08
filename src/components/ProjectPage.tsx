@@ -3,7 +3,7 @@ import { ProjectData } from "../data/ProjectData";
 import styles from "../css-modules/ProjectPage.module.css";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { IconButton } from "@mui/material";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface ProjectPageProps {
@@ -88,6 +88,11 @@ function ProjectPage(props: ProjectPageProps) {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Create a floating 'new project' button that will always be anchored to the bottom right of the page */}
+            <div className={styles.newProjectButtonContainer}>
+                <button className={styles.newProjectButton}>New Project</button>
             </div>
         </div>
     );

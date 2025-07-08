@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import styles from "../css-modules/SettingsPage.module.css"
 import AddIcon from '@mui/icons-material/Add';
-import { open } from '@tauri-apps/api/dialog';
-import { invoke } from "@tauri-apps/api";
+import { open } from '@tauri-apps/plugin-dialog';
+import { invoke } from "@tauri-apps/api/core"
 import { appDataDir } from '@tauri-apps/api/path';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 
@@ -41,27 +41,37 @@ function SettingsPage(props: SettingsPageProps) {
     }
 
     return (
-        <div>
-            <div>
-                <div className={styles.flex}>
-                    <h3>Project Paths</h3>
-                    <button onClick={() => openDialog()}><AddIcon /></button>
+        <div className={styles.settingsContainer}>
+            <h1 className={styles.settingsTitle}>Settings</h1>
+
+            <section className={styles.settingsSection}>
+                <h2 className={styles.sectionTitle}>Project Paths</h2>
+                <div className={styles.projectPathsContainer}>
+                    <div className={styles.addPathRow}>
+                        <button className={styles.addButton} onClick={() => openDialog()}>
+                            <AddIcon /> Add Project Path
+                        </button>
+                    </div>
+
+                    {projectPaths.length > 0 ? (
+                        <ul className={styles.pathList}>
+                            {projectPaths.map((path, index) => (
+                                <li key={index} className={styles.pathItem}>
+                                    <span className={styles.pathText}>{path}</span>
+                                    <button
+                                        className={styles.removeButton}
+                                        onClick={() => removeProjectDirectory(path)}
+                                    >
+                                        <RemoveCircleOutlineIcon />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className={styles.noPathsMessage}>No project paths added yet.</p>
+                    )}
                 </div>
-
-                {projectPaths.length > 0 ?
-                    <ul>
-                        {projectPaths.map(path =>
-                            <li>
-                                {path}
-                                <button onClick={() => removeProjectDirectory(path)}>
-                                    <RemoveCircleOutlineIcon />
-                                </button>
-                            </li>
-                        )}
-                    </ul>
-                    : null}
-            </div>
-
+            </section>
         </div>
     );
 

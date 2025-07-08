@@ -3,7 +3,7 @@ use std::env;
 enum Environment {
     DEV,
     TEST,
-    PROD
+    PROD,
 }
 
 pub fn get_environment() -> Environment {
@@ -12,29 +12,29 @@ pub fn get_environment() -> Environment {
             "dev" => Environment::DEV,
             "test" => Environment::TEST,
             "prod" => Environment::PROD,
-            _ => Environment::DEV
+            _ => Environment::DEV,
         },
-        _ => Environment::DEV
+        _ => Environment::DEV,
     }
 }
 
 pub fn is_dev() -> bool {
     match get_environment() {
         Environment::DEV => true,
-        _ => false
+        _ => false,
     }
 }
 
 pub fn is_test() -> bool {
     match get_environment() {
         Environment::TEST => true,
-        _ => false
+        _ => false,
     }
 }
 
 pub fn is_prod() -> bool {
     match get_environment() {
         Environment::PROD => true,
-        _ => false
+        _ => false,
     }
 }

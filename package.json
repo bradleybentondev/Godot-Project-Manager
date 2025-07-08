@@ -15,12 +15,14 @@
     "@fortawesome/fontawesome-free": "^6.5.2",
     "@mui/icons-material": "^5.15.9",
     "@mui/material": "^5.15.9",
-    "@tauri-apps/api": "^1.5.2",
+    "@tauri-apps/api": "2.0.0",
+    "@tauri-apps/plugin-dialog": "~2",
+    "@tauri-apps/plugin-shell": "~2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.5.8",
+    "@tauri-apps/cli": "^2.6.2",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",

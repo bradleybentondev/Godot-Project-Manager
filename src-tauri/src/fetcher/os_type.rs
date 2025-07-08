@@ -5,7 +5,7 @@ pub enum OsType {
     LinuxArm64,
     Linux64,
     Linux32,
-    Mac
+    Mac,
 }
 
 impl OsType {

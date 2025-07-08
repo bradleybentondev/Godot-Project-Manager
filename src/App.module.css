@@ -9,4 +9,11 @@
 .mainContainer {
   display: flex;
   height: 98%;
+  overflow: hidden;
+}
+
+.contentContainer {
+  margin: 0;
+  width: 100%;
+  overflow: scroll;
 }

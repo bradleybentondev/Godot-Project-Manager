@@ -13,6 +13,7 @@ pub struct NewsEntry {
     info: String,
     body: String,
     image_url: String,
+    href: String,
 }
 
 pub async fn get_news() -> Option<Vec<NewsEntry>> {
@@ -55,7 +56,7 @@ fn build_news_entry(element: ElementRef) -> NewsEntry {
     let date_selector = Selector::parse(".date").unwrap();
     let thumbnail_selector = Selector::parse(".thumbnail").unwrap();
 
-    let re = Regex::new(r"'([^']*)'").unwrap();
+    let re = Regex::new(r"\(([^)]+)\)").unwrap();
 
     let mut info = element
         .select(&by_selector)
@@ -75,7 +76,9 @@ fn build_news_entry(element: ElementRef) -> NewsEntry {
             .next()
             .unwrap();
 
-    let image_url_html = element.select(&thumbnail_selector).next().unwrap().html();
+    let image_url = element.select(&thumbnail_selector).next().unwrap();
+    let image_url_html = image_url.html();
+    let href = image_url.value().attr("href").unwrap();
     let mut image_url = "".to_string();
 
     if let Some(captured) = re.captures(&image_url_html) {
@@ -101,6 +104,7 @@ fn build_news_entry(element: ElementRef) -> NewsEntry {
             .to_string(),
         info: info,
         image_url,
+        href: href.to_string(),
     }
 }
 
