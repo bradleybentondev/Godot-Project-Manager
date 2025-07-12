@@ -112,12 +112,12 @@ function App() {
 
   return (
     <ThemeContext.Provider value={{ isDarkMode }}>
-      <div className={`${styles.mainContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+      <div className={`${styles.mainContainer}`} data-theme={isDarkMode ? 'dark' : 'light'}>
         <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
 
         <div className={styles.contentContainer}>
           {page == PageEnum.Projects ? (
-            <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setProjectEngineVersion={setProjectEngineVersion} />
+            <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setAllProjects={setProjects} setProjectEngineVersion={setProjectEngineVersion} />
           ) : page == PageEnum.Engines ? (
             <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
           ) : page == PageEnum.Settings ? (

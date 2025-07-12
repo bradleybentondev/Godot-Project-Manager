@@ -34,3 +34,12 @@ table td {
 .progressBar {
     max-width: 50px;
 }
+
+[data-theme="dark"] {
+    .tableContainer {
+        margin: 20px;
+        background-color: var(--background-dark);
+        border-radius: 10px;
+    }
+    
+}

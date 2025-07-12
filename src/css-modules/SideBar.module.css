@@ -1,10 +1,13 @@
+
+
+
 .container {
     min-width: 200px;
     max-width: 200px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    background-color: white;
+    background-color: var(--background-light);
 }
 
 .container h3 {
@@ -66,4 +69,32 @@
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+
+[data-theme="dark"] {
+    .container {
+        min-width: 200px;
+        max-width: 200px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        background-color: var(--background-dark);
+    }
+
+    .navButton:hover {
+        background-color: rgb(37, 58, 153);
+        cursor: pointer;
+    }
+
+    .countBox {
+        background-color: rgb(0, 0, 0);
+        padding: 1px;
+        border-radius: 5px;
+        font-size: smaller;
+        width: 25px;
+        align-self: center;
+        display: flex;
+        justify-content: center;
+    }
 }

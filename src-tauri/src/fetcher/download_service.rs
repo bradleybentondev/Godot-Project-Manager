@@ -16,7 +16,10 @@ use crate::{
     test_data, Data, DataState,
 };
 
+use chrono::{DateTime, Local};
+
 const GITHUB_URL: &str = "https://api.github.com/repos/godotengine/godot/releases";
+const GITHUB_BETA_BUILDS_URL: &str = "https://api.github.com/repos/godotengine/godot-builds/releases";
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Asset {
@@ -50,9 +53,28 @@ pub async fn get_available_releases() -> Result<Vec<Release>, Box<dyn std::error
         .text()
         .await?;
 
-    let value: Vec<Release> = serde_json::from_str(&body).unwrap();
+    let normal_releases: Vec<Release> = serde_json::from_str(&body).unwrap();
 
-    return Ok(value);
+    let body: String = client
+        .get(GITHUB_BETA_BUILDS_URL)
+        .header(USER_AGENT, "My Rust Program 1.0")
+        .send()
+        .await?
+        .text()
+        .await?;
+
+    let beta_releases: Vec<Release> = serde_json::from_str(&body).unwrap();
+
+    let mut releases = normal_releases;
+    releases.extend(beta_releases);
+
+    // Sort releases by their date uploaded time
+    releases.sort_by_key(|release| {
+        release.assets.first().unwrap().created_at.clone().parse::<DateTime<Local>>().unwrap()
+    });
+    releases.reverse();
+
+    return Ok(releases);
 }
 
 pub async fn download_and_extract_engine(

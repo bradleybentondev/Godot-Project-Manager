@@ -9,6 +9,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 interface ProjectPageProps {
     installedGodotEngines: GodotEngineVersion[];
     allProjects: ProjectData[];
+    setAllProjects: (projects: ProjectData[]) => void;
     setProjectEngineVersion: (projectName: string, engineName: string) => void;
 }
 
@@ -49,11 +50,11 @@ function ProjectPage(props: ProjectPageProps) {
 
     async function launch(project: ProjectData) {
         const [name, time] = await invoke<[string, number]>("open_project", { projectName: project.projectName });
-        // let p = projects.find(p => p.projectName === name);
-        // if (p) {
-        //     p.lastDateOpened = time;
-        // }
-        // setProjects([...projects]);
+        let p = props.allProjects.find(p => p.projectName === name);
+        if (p) {
+            p.lastDateOpened = time;
+        }
+        props.setAllProjects([...props.allProjects]);
     }
 
     return (

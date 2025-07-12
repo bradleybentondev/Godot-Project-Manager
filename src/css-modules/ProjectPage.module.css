@@ -109,3 +109,60 @@ select option {
     color: white;
     font-weight: bold;
 }
+
+
+[data-theme="dark"] {
+    .tableContainer {
+        width: 95%;
+        margin: 0 auto;
+        overflow-x: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        background-color: var(--background-dark);
+    }
+
+    thead {
+        background-color: #333;
+    }
+    
+    th,
+    td {
+        padding: 12px 15px;
+        text-align: left;
+    }
+    
+    th {
+        font-size: 14px;
+        color: var(--background-light);
+        text-transform: uppercase;
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: var(--background-dark);
+    }
+
+    .tableRow:hover {
+        background-color: #535353;
+    }
+
+    .dropdown select {
+        all: unset;
+        display: flex;
+        cursor: pointer;
+        border: 1px solid rgb(216, 216, 216);
+        border-radius: 2px;
+        padding: 5px 30px 5px 5px;
+    }
+
+    .dropdown select:hover {
+        background-color: var(--background-dark);
+    }
+    
+    .dropdown option {
+        background-color: var(--background-dark);
+    }
+
+    .dropdown option:hover {
+        background-color: var(--background-dark);
+    }
+}
