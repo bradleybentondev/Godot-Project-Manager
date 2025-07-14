@@ -39,10 +39,20 @@ tbody tr:nth-child(even) {
 
 .tableRow {
     transition: background-color 0.3s ease;
+    height: 100px;
 }
 
 .tableRow:hover {
     background-color: #f1f1f1;
+}
+
+.tableRow td {
+    border-bottom: 1px solid #dddddd48;
+}
+
+.image {
+    width: 50px;
+    height: 50px;
 }
 
 .bold {
@@ -118,7 +128,7 @@ select option {
         overflow-x: auto;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
-        background-color: var(--background-dark);
+        background-color: inherit;
     }
 
     thead {
@@ -138,7 +148,7 @@ select option {
     }
     
     tbody tr:nth-child(even) {
-        background-color: var(--background-dark);
+        background-color: inherit;
     }
 
     .tableRow:hover {

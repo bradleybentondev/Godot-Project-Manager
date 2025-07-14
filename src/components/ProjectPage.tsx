@@ -2,8 +2,8 @@ import { GodotEngineVersion } from "../data/GodotEngineVersion";
 import { ProjectData } from "../data/ProjectData";
 import styles from "../css-modules/ProjectPage.module.css";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { IconButton } from "@mui/material";
-import { invoke } from "@tauri-apps/api/core"
+import { Icon, IconButton } from "@mui/material";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 interface ProjectPageProps {
@@ -24,7 +24,12 @@ function ProjectPage(props: ProjectPageProps) {
     function formatDate(lastDateOpened: number): string {
         console.log("last date opened", lastDateOpened);
         if (lastDateOpened > 0) {
-            return new Date(lastDateOpened).toDateString()
+            const date = new Date(lastDateOpened);
+            const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+            const dd = String(date.getDate()).padStart(2, '0');
+            const yyyy = date.getFullYear();
+
+            return `${mm}/${dd}/${yyyy}`;
         } else {
             return "N/A"
         }
@@ -57,12 +62,20 @@ function ProjectPage(props: ProjectPageProps) {
         props.setAllProjects([...props.allProjects]);
     }
 
+    function getImagePath(project: ProjectData): string {
+        const indexLastSlah = project.projectPath.lastIndexOf("\\");
+        const path = project.projectPath.substring(0, indexLastSlah);
+        console.log(path + "\\icon.png");
+        return convertFileSrc(path + "\\icon.png");
+    }
+
     return (
         <div className={styles.widthFull}>
             <div className={styles.tableContainer}>
-                <table cellSpacing="0" className={styles.table}>
+                <table cellSpacing="0" cellPadding="0" className={styles.table}>
                     <thead>
                         <tr>
+                            <th></th>
                             <th>Name</th>
                             <th>Last Opened</th>
                             <th>Engine Version</th>
@@ -72,6 +85,9 @@ function ProjectPage(props: ProjectPageProps) {
                     <tbody>
                         {props.allProjects.sort((a, b) => b.lastDateOpened - a.lastDateOpened).map(project => (
                             <tr key={project.projectName} className={styles.tableRow}>
+                                <td>
+                                    <img className={styles.image} src={getImagePath(project)} />
+                                </td>
                                 <td>
                                     <span className={styles.bold}>{project.projectName}</span><br />
                                     <span className={styles.projectPath}>{project.projectPath}</span>
