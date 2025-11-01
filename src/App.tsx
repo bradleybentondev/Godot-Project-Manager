@@ -1,4 +1,4 @@
-import { useEffect, useState, createContext, useContext } from "react";
+import { useEffect, useState, createContext } from "react";
 import styles from "./App.module.css";
 import SideBar from "./components/SideBar";
 import { PageEnum } from "./data/PageEnum";

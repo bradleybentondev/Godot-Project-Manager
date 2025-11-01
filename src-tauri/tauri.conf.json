@@ -18,8 +18,8 @@
   },
   "productName": "godot_manager",
   "mainBinaryName": "godot_manager",
-  "version": "0.0.0",
-  "identifier": "com.tauri.dev",
+  "version": "0.0.1",
+  "identifier": "com.paha.godot-manager",
   "plugins": {},
   "app": {
     "windows": [

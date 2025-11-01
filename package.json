@@ -15,9 +15,9 @@
     "@fortawesome/fontawesome-free": "^6.5.2",
     "@mui/icons-material": "^5.15.9",
     "@mui/material": "^5.15.9",
-    "@tauri-apps/api": "2.0.0",
-    "@tauri-apps/plugin-dialog": "~2",
-    "@tauri-apps/plugin-shell": "~2",
+    "@tauri-apps/api": "2.6.2",
+    "@tauri-apps/plugin-dialog": "2.4.2",
+    "@tauri-apps/plugin-shell": "2.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

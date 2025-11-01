@@ -11,7 +11,7 @@
 
 .settingsTitle {
     font-size: 28px;
-    color: #333;
+    color: #e7e7e7;
     margin-bottom: 20px;
     border-bottom: 2px solid #eee;
     padding-bottom: 10px;
@@ -19,16 +19,19 @@
 
 .settingsSection {
     margin-bottom: 30px;
+    background-color: var(--background-dark-header);
+    border-radius: 8px;
 }
 
 .sectionTitle {
     font-size: 20px;
-    color: #444;
+    color: #eee;
     margin-bottom: 15px;
+    padding: 10px;
 }
 
 .projectPathsContainer {
-    background-color: #f9f9f9;
+    background-color: var(--background-dark-header);
     border-radius: 8px;
     padding: 15px;
 }
@@ -62,8 +65,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: white;
-    border: 1px solid #ddd;
+    background-color: var(--background-dark-header);
+    border: 1px solid var(--background-dark);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;

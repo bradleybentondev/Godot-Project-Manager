@@ -1,6 +1,9 @@
 :root {
-  --background-dark: #242424;
+  --background-dark-header: #363D4B;
+  --background-dark: #1D232A;
+  --background-dark-hover: #343949;
   --background-light: #fff;
+  --text-main: #ebebeb;
 }
 
 .logo.vite:hover {
@@ -15,6 +18,7 @@
   display: flex;
   height: 98%;
   overflow: hidden;
+  background-color: var(--background-dark);
 }
 
 .contentContainer {

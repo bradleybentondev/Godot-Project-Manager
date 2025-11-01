@@ -23,10 +23,11 @@ table tr {
 table th {
     text-align: left;
     padding-left: 20px;
+    background-color: var(--background-dark-header);
 }
 
 table td {
-    border-bottom: 1px solid rgb(214, 214, 214);
+    border-bottom: 1px solid rgb(59, 59, 59);
     border-collapse: collapse;
     padding-left: 20px;
 }
@@ -38,8 +39,7 @@ table td {
 [data-theme="dark"] {
     .tableContainer {
         margin: 20px;
-        background-color: var(--background-dark);
+        background-color: inherit;
         border-radius: 10px;
     }
-    
 }

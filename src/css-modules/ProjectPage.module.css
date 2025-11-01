@@ -15,10 +15,8 @@
     width: 100%;
     border-collapse: collapse;
     font-family: 'Arial', sans-serif;
-}
-
-thead {
-    background-color: #f5f5f5;
+    background-color: var(--background-dark);
+    color: var(--text-main);
 }
 
 th,
@@ -29,8 +27,8 @@ td {
 
 th {
     font-size: 14px;
-    color: #333;
     text-transform: uppercase;
+    background-color: var(--background-dark-header);
 }
 
 tbody tr:nth-child(even) {
@@ -108,8 +106,8 @@ select option {
 
 .newProjectButtonContainer {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    bottom: 50px;
+    right: 30px;
 }
 
 .newProjectButtonContainer button {
@@ -123,8 +121,8 @@ select option {
 
 [data-theme="dark"] {
     .tableContainer {
-        width: 95%;
-        margin: 0 auto;
+        width: 100%;
+    margin: 20px;
         overflow-x: auto;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border-radius: 8px;
@@ -152,20 +150,21 @@ select option {
     }
 
     .tableRow:hover {
-        background-color: #535353;
+        background-color: var(--background-dark-hover);
     }
 
     .dropdown select {
         all: unset;
         display: flex;
         cursor: pointer;
-        border: 1px solid rgb(216, 216, 216);
+        border: 1px solid #323232;
         border-radius: 2px;
         padding: 5px 30px 5px 5px;
+        background-color: #22252F;
     }
 
     .dropdown select:hover {
-        background-color: var(--background-dark);
+        background-color: #22252F;
     }
     
     .dropdown option {
@@ -174,5 +173,22 @@ select option {
 
     .dropdown option:hover {
         background-color: var(--background-dark);
+    }
+
+    .iconButton {
+        color: #0069e0;
+        box-shadow: none;
+    }
+    
+    .iconButton:hover {
+        color: #69afff;
+    }
+
+    .outerIconButton {
+        background-color: inherit;
+    }
+
+    .outerIconButton:hover {
+        background-color: inherit;
     }
 }

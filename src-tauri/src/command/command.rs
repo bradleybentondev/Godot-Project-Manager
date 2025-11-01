@@ -5,17 +5,15 @@ use crate::{
 };
 
 pub fn open_project(project: &ProjectData, engine: &GodotEngineVersion) {
-    let output = if cfg!(target_os = "windows") {
+    if cfg!(target_os = "windows") {
         Command::new(&engine.executable_path)
             .arg(&project.project_path)
             .spawn()
-            .unwrap()
     } else {
         Command::new("sh")
             .arg("-c")
             .arg("echo hello")
             .spawn()
-            .unwrap()
     };
 }
 

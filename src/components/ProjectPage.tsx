@@ -2,7 +2,7 @@ import { GodotEngineVersion } from "../data/GodotEngineVersion";
 import { ProjectData } from "../data/ProjectData";
 import styles from "../css-modules/ProjectPage.module.css";
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { Icon, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core"
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
@@ -65,8 +65,13 @@ function ProjectPage(props: ProjectPageProps) {
     function getImagePath(project: ProjectData): string {
         const indexLastSlah = project.projectPath.lastIndexOf("\\");
         const path = project.projectPath.substring(0, indexLastSlah);
-        console.log(path + "\\icon.png");
         return convertFileSrc(path + "\\icon.png");
+    }
+
+    function getOtherImagePath(project: ProjectData): string {
+        const indexLastSlah = project.projectPath.lastIndexOf("\\");
+        const path = project.projectPath.substring(0, indexLastSlah);
+        return convertFileSrc(path + "\\icon.svg");
     }
 
     return (
@@ -86,7 +91,7 @@ function ProjectPage(props: ProjectPageProps) {
                         {props.allProjects.sort((a, b) => b.lastDateOpened - a.lastDateOpened).map(project => (
                             <tr key={project.projectName} className={styles.tableRow}>
                                 <td>
-                                    <img className={styles.image} src={getImagePath(project)} />
+                                    <img className={styles.image} src={getImagePath(project)} onError={(e) => e.currentTarget.src = getOtherImagePath(project)} />
                                 </td>
                                 <td>
                                     <span className={styles.bold}>{project.projectName}</span><br />
@@ -96,7 +101,7 @@ function ProjectPage(props: ProjectPageProps) {
                                 <td>{engineVersionDropdown(findEngineVersion(project.engineVersion), project)}</td>
                                 <td>
                                     {project.engineValid && (
-                                        <IconButton onClick={() => launch(project)}>
+                                        <IconButton className={styles.outerIconButton} onClick={() => launch(project)}>
                                             <PlayArrowIcon className={styles.iconButton} />
                                         </IconButton>
                                     )}

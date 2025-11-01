@@ -1,6 +1,4 @@
 
-
-
 .container {
     min-width: 200px;
     max-width: 200px;
@@ -8,6 +6,7 @@
     flex-direction: column;
     flex-grow: 1;
     background-color: var(--background-light);
+    color: var(--text-main);
 }
 
 .container h3 {
@@ -79,16 +78,16 @@
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-        background-color: var(--background-dark);
+        background-color: #383C4D;
     }
 
     .navButton:hover {
-        background-color: rgb(37, 58, 153);
+        background-color: var(--background-dark);
         cursor: pointer;
     }
 
     .countBox {
-        background-color: rgb(0, 0, 0);
+        background-color: var(--background-dark-hover);
         padding: 1px;
         border-radius: 5px;
         font-size: smaller;
