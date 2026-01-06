@@ -83,7 +83,7 @@ function App() {
   }
 
   function downloadEngine(engineName: string) {
-    invoke("download_engine_version", { engineName: engineName }).then(response => {
+    invoke("download_engine_version", { engineName: engineName }).then(_ => {
       invoke<GodotEngineVersion[]>("get_installed_versions").then(response => {
         setInstalledEngines(response);
       })
