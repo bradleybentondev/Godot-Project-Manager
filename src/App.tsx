@@ -11,6 +11,7 @@ import EnginePage from "./components/EnginePage";
 import SettingsPage from "./components/SettingsPage";
 import { NewsEntry } from "./data/NewsEntry";
 import NewsPage from "./components/NewsPage";
+import { OrbitProgress } from "react-loading-indicators";
 
 // Theme context for dark mode detection
 export type ThemeContextType = {
@@ -21,6 +22,7 @@ export const ThemeContext = createContext<ThemeContextType>({ isDarkMode: false 
 
 function App() {
   const [page, setPage] = useState(PageEnum.Projects);
+  const [loading, setLoading] = useState(true);
   const [allEngines, setAllEngines] = useState<GodotEngineVersion[]>([]);
   const [installedEngines, setInstalledEngines] = useState<GodotEngineVersion[]>([]);
   const [projects, setProjects] = useState<ProjectData[]>([]);
@@ -57,6 +59,8 @@ function App() {
     invoke<NewsEntry[]>("get_news_entries").then(response => {
       setNewsEntries(response);
     })
+
+    setLoading(false);
   }
 
 
@@ -91,14 +95,14 @@ function App() {
 
     // Add event listener for changes in system color scheme preference
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleThemeChange = (e: MediaQueryListEvent) => {
       setIsDarkMode(e.matches);
     };
-    
+
     // Modern browsers
     darkModeMediaQuery.addEventListener('change', handleThemeChange);
-    
+
     // Cleanup
     return () => {
       darkModeMediaQuery.removeEventListener('change', handleThemeChange);
@@ -109,17 +113,22 @@ function App() {
     <ThemeContext.Provider value={{ isDarkMode }}>
       <div className={`${styles.mainContainer}`} data-theme={isDarkMode ? 'dark' : 'light'}>
         <SideBar setPage={setPage} projectCount={projects.length} engineCount={allEngines.length} newsCount={12} projects={projects} />
-
         <div className={styles.contentContainer}>
-          {page == PageEnum.Projects ? (
-            <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setAllProjects={setProjects} setProjectEngineVersion={setProjectEngineVersion} />
-          ) : page == PageEnum.Engines ? (
-            <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
-          ) : page == PageEnum.Settings ? (
-            <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
-          ) : page == PageEnum.News ? (
-            <NewsPage newsEntries={newsEntries} />
-          ) : null}
+          {loading ?
+            <div id={styles.loadingContainer}>
+              <OrbitProgress color="#32cd32" size="medium" text="" textColor="" />
+            </div>
+            : page == PageEnum.Projects ? (
+              <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setAllProjects={setProjects} setProjectEngineVersion={setProjectEngineVersion} />
+            ) : page == PageEnum.Engines ? (
+              <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
+            ) : page == PageEnum.Settings ? (
+              <SettingsPage initialProjectPaths={projectPaths} refreshProjects={getAllProjects} />
+            ) : page == PageEnum.News ? (
+              <NewsPage newsEntries={newsEntries} />
+            ) : null
+          }
+
         </div>
       </div>
     </ThemeContext.Provider>
