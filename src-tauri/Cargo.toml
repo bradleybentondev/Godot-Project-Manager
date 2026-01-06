@@ -1,11 +1,11 @@
 [package]
 name = "godot_manager"
-version = "0.0.0"
-description = "A Tauri App"
+version = "0.8.0"
+description = "A manager for Godot engines and projects"
 authors = ["you"]
 license = ""
 repository = ""
-edition = "2021"
+edition = "2026"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

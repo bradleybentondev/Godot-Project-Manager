@@ -18,7 +18,7 @@
   },
   "productName": "godot_manager",
   "mainBinaryName": "godot_manager",
-  "version": "0.0.1",
+  "version": "0.8.0",
   "identifier": "com.paha.godot-manager",
   "plugins": {},
   "app": {
