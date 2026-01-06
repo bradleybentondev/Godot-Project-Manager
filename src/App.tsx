@@ -42,12 +42,10 @@ function App() {
 
     let allEngines = await invoke<GodotEngineResponse>("get_engine_versions");
     setAllEngines(allEngines.allVersions);
-    console.log("get all engines", allEngines);
 
 
     let installedVersions = await invoke<GodotEngineVersion[]>("get_installed_versions");
     setInstalledEngines(installedVersions);
-    console.log("get installed engines", installedVersions);
 
 
     getAllProjects();
@@ -64,7 +62,6 @@ function App() {
 
   function getAllProjects() {
     invoke<ProjectData[]>("get_all_projects").then(response => {
-      console.log("get all projects", response);
       setProjects(response);
     })
   }
@@ -82,9 +79,7 @@ function App() {
   }
 
   function downloadEngine(engineName: string) {
-    console.log("downloading version");
     invoke("download_engine_version", { engineName: engineName }).then(response => {
-      console.log(response);
       invoke<GodotEngineVersion[]>("get_installed_versions").then(response => {
         setInstalledEngines(response);
       })
@@ -93,7 +88,7 @@ function App() {
 
   useEffect(() => {
     init();
-    
+
     // Add event listener for changes in system color scheme preference
     const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     

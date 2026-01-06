@@ -22,7 +22,6 @@ function ProjectPage(props: ProjectPageProps) {
     }
 
     function formatDate(lastDateOpened: number): string {
-        console.log("last date opened", lastDateOpened);
         if (lastDateOpened > 0) {
             const date = new Date(lastDateOpened);
             const mm = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based

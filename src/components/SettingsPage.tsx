@@ -28,7 +28,6 @@ function SettingsPage(props: SettingsPageProps) {
         });
 
         if (selected) {
-            console.log("selected", selected);
             invoke<string[]>("save_project_path", { projectDirectory: selected as string }).then(paths => {
                 setProjectPaths(paths)
                 props.refreshProjects();

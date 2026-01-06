@@ -84,8 +84,8 @@ function EnginePage(props: EnginePageProps) {
                 </tr>
             </thead>
             <tbody>
-                {engines.map(engine => (
-                    <tr key={engine.engineName}>
+                {engines.map((engine, idx) => (
+                    <tr key={idx}>
                         <td>{engine.engineName}</td>
                         <td>{engine.engineVersion}</td>
                         <td>{new Date(engine.updatedAt).toDateString()}</td>
