@@ -1248,7 +1248,7 @@ dependencies = [
 
 [[package]]
 name = "godot_manager"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "chrono",
  "directories",
