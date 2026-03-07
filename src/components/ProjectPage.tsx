@@ -25,7 +25,7 @@ function ProjectPage(props: ProjectPageProps) {
             });
     
             if (selected) {
-                invoke<string[]>("save_project_path", { projectDirectory: selected as string }).then(paths => {
+                invoke<string[]>("save_project_path", { projectDirectory: selected as string }).then(() => {
                     props.refreshProjects();
                 })
             }
