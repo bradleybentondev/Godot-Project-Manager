@@ -1,17 +1,17 @@
-import { useEffect, useState, createContext } from "react";
-import styles from "./App.module.css";
-import SideBar from "./components/SideBar";
-import { PageEnum } from "./data/PageEnum";
-import { GodotEngineVersion } from "./data/GodotEngineVersion";
-import { invoke } from "@tauri-apps/api/core"
-import { GodotEngineResponse } from "./data/GodotEngineResponse";
-import { ProjectData } from "./data/ProjectData";
-import ProjectPage from "./components/ProjectPage";
-import EnginePage from "./components/EnginePage";
-import SettingsPage from "./components/SettingsPage";
-import { NewsEntry } from "./data/NewsEntry";
-import NewsPage from "./components/NewsPage";
+import { invoke } from "@tauri-apps/api/core";
+import { createContext, useEffect, useState } from "react";
 import { OrbitProgress } from "react-loading-indicators";
+import styles from "./App.module.css";
+import EnginePage from "./components/EnginePage";
+import NewsPage from "./components/NewsPage";
+import ProjectPage from "./components/ProjectPage";
+import SettingsPage from "./components/SettingsPage";
+import SideBar from "./components/SideBar";
+import { GodotEngineResponse } from "./data/GodotEngineResponse";
+import { GodotEngineVersion } from "./data/GodotEngineVersion";
+import { NewsEntry } from "./data/NewsEntry";
+import { PageEnum } from "./data/PageEnum";
+import { ProjectData } from "./data/ProjectData";
 
 // Theme context for dark mode detection
 export type ThemeContextType = {
@@ -119,7 +119,7 @@ function App() {
               <OrbitProgress color="#32cd32" size="medium" text="" textColor="" />
             </div>
             : page == PageEnum.Projects ? (
-              <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setAllProjects={setProjects} setProjectEngineVersion={setProjectEngineVersion} />
+              <ProjectPage installedGodotEngines={installedEngines} allProjects={projects} setAllProjects={setProjects} setProjectEngineVersion={setProjectEngineVersion} refreshProjects={getAllProjects} />
             ) : page == PageEnum.Engines ? (
               <EnginePage allGodotEngines={allEngines} installedGodotEngines={installedEngines} downloadEngineFunc={downloadEngine} deleteVersion={deleteVersion} />
             ) : page == PageEnum.Settings ? (

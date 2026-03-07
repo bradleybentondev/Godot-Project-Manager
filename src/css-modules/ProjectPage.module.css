@@ -191,4 +191,8 @@ select option {
     .outerIconButton:hover {
         background-color: inherit;
     }
+
+    .dialog {
+        background-color: var(--background-dark);
+    }
 }
