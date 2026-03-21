@@ -17,19 +17,19 @@ interface ProjectPageProps {
 function ProjectPage(props: ProjectPageProps) {
     // const [projects, setProjects] = useState(props.allProjects);
 
-     async function openDialog() {
-            const selected = await open({
-                directory: true,
-                multiple: false,
-                defaultPath: await appDataDir(),
-            });
-    
-            if (selected) {
-                invoke<string[]>("save_project_path", { projectDirectory: selected as string }).then(() => {
-                    props.refreshProjects();
-                })
-            }
+    async function openDialog() {
+        const selected = await open({
+            directory: true,
+            multiple: false,
+            defaultPath: await appDataDir(),
+        });
+
+        if (selected) {
+            invoke<string[]>("save_project_path", { projectDirectory: selected as string }).then(() => {
+                props.refreshProjects();
+            })
         }
+    }
 
     return (
         props.allProjects.length > 0 ?

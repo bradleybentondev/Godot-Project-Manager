@@ -4,7 +4,7 @@ import styles from "../css-modules/EnginePage.module.css";
 import DownloadIcon from '@mui/icons-material/Download';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import { IconButton } from "@mui/material";
+import { Box, IconButton, Typography } from "@mui/material";
 import { invoke } from "@tauri-apps/api/core"
 
 interface EnginePageProps {
@@ -86,7 +86,10 @@ function EnginePage(props: EnginePageProps) {
             <tbody>
                 {engines.map((engine, idx) => (
                     <tr key={idx}>
-                        <td>{engine.engineName}</td>
+                        <td><Box sx={{ display: "flex", flexDirection: "column" }}>
+                            <Typography>{engine.engineName}</Typography>
+                            <span className={styles.projectPath}>{engine.installationPath}</span>
+                        </Box></td>
                         <td>{engine.engineVersion}</td>
                         <td>{new Date(engine.updatedAt).toDateString()}</td>
                         <td>

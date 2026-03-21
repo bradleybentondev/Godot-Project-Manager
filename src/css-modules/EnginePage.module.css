@@ -36,6 +36,11 @@ table td {
     max-width: 50px;
 }
 
+.projectPath {
+    font-size: 12px;
+    color: #888;
+}
+
 [data-theme="dark"] {
     .tableContainer {
         margin: 20px;
